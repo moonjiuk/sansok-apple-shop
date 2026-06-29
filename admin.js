@@ -78,7 +78,6 @@ function renderDashboard() {
   document.querySelector("#statProducts").textContent = products.filter(product => ["판매중","예약판매"].includes(product.status)).length;
   document.querySelector("#statRevenue").textContent = won(orders.reduce((sum, order) => sum + order.total, 0));
   document.querySelector("#newOrderCount").textContent = orders.filter(order => order.status === "신규주문").length;
-  document.querySelector("#recentOrders").innerHTML = orders.length ? `<div class="table-wrap"><table><tbody>${orders.slice(0,5).map(order => orderRow(order, false)).join("")}</tbody></table></div>` : `<div class="table-empty">아직 접수된 주문이 없습니다.</div>`;
 }
 function orderRow(order, selectable = true) {
   const itemText = order.items.map(item => `${item.name.startsWith(item.variety) ? item.name : `${item.variety} ${item.name}`} × ${item.quantity}`).join(", ");
@@ -177,7 +176,7 @@ function showPage(page) {
   document.querySelectorAll(".admin-page").forEach(section => section.classList.remove("active"));
   document.querySelectorAll(".admin-sidebar nav button").forEach(button => button.classList.toggle("active", button.dataset.page === page));
   document.querySelector(`#${page}Page`).classList.add("active");
-  const names = { dashboard:["OVERVIEW","판매 현황"], products:["CATALOG","상품 관리"], orders:["ORDERS","주문 관리"], settings:["STORE SETTINGS","판매 정보"] };
+  const names = { products:["CATALOG","상품 관리"], orders:["ORDERS","주문 관리"], settings:["STORE SETTINGS","판매 정보"] };
   document.querySelector("#pageEyebrow").textContent = names[page][0];
   document.querySelector("#pageTitle").textContent = names[page][1];
 }
@@ -189,7 +188,7 @@ function updateSelectedProductCount() {
 }
 
 document.addEventListener("click", event => {
-  const page = event.target.closest("[data-page]")?.dataset.page || event.target.closest("[data-go]")?.dataset.go;
+  const page = event.target.closest("[data-page]")?.dataset.page;
   if (page) showPage(page);
   const editId = Number(event.target.dataset.editProduct);
   if (editId) openProduct(products.find(product => product.id === editId));

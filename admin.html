@@ -20,9 +20,8 @@
   <aside class="admin-sidebar">
     <a class="admin-brand" href="index.html"><span>●</span><strong>산속 놀이터</strong><small>판매 관리</small></a>
     <nav>
-      <button class="active" data-page="dashboard">홈</button>
+      <button class="active" data-page="orders">주문 관리 <i id="newOrderCount">0</i></button>
       <button data-page="products">상품 관리</button>
-      <button data-page="orders">주문 관리 <i id="newOrderCount">0</i></button>
       <button data-page="settings">판매 정보</button>
     </nav>
     <a class="store-link" href="index.html">← 고객용 사이트 보기</a>
@@ -30,21 +29,8 @@
 
   <main class="admin-main">
     <header>
-      <div><p id="pageEyebrow">OVERVIEW</p><h1 id="pageTitle">판매 현황</h1></div>
+      <div><p id="pageEyebrow">ORDERS</p><h1 id="pageTitle">주문 관리</h1></div>
     </header>
-
-    <section class="admin-page active" id="dashboardPage">
-      <div class="stat-grid">
-        <article><span>전체 주문</span><strong id="statOrders">0</strong><small>접수된 주문</small></article>
-        <article><span>신규 주문</span><strong id="statNew">0</strong><small>확인이 필요해요</small></article>
-        <article><span>판매 상품</span><strong id="statProducts">0</strong><small>판매중·예약판매</small></article>
-        <article><span>총 주문액</span><strong id="statRevenue">0원</strong><small>접수 기준</small></article>
-      </div>
-      <div class="panel">
-        <div class="panel-title"><div><p>RECENT ORDERS</p><h2>최근 주문</h2></div><button data-go="orders">전체 보기</button></div>
-        <div id="recentOrders"></div>
-      </div>
-    </section>
 
     <section class="admin-page" id="productsPage">
       <div class="panel">
@@ -66,7 +52,13 @@
       </div>
     </section>
 
-    <section class="admin-page" id="ordersPage">
+    <section class="admin-page active" id="ordersPage">
+      <div class="stat-grid">
+        <article><span>전체 주문</span><strong id="statOrders">0</strong><small>접수된 주문</small></article>
+        <article><span>신규 주문</span><strong id="statNew">0</strong><small>확인이 필요해요</small></article>
+        <article><span>판매 상품</span><strong id="statProducts">0</strong><small>판매중·예약판매</small></article>
+        <article><span>총 주문액</span><strong id="statRevenue">0원</strong><small>접수 기준</small></article>
+      </div>
       <div class="panel">
         <div class="panel-title"><div><p>ORDERS</p><h2>주문 목록</h2></div><button id="sampleOrder">예시 주문 만들기</button></div>
         <div class="order-tools">
