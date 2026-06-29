@@ -7,6 +7,16 @@
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+  <div class="admin-lock" id="adminLock">
+    <form class="admin-lock-card" id="adminLoginForm">
+      <span>SELLER ACCESS</span>
+      <h1>판매 관리 로그인</h1>
+      <p>판매자 암호를 입력해 주세요.</p>
+      <label>암호<input id="adminPassword" type="password" autocomplete="current-password" autofocus required></label>
+      <button type="submit">판매 관리 열기</button>
+      <small id="adminLoginError" role="alert"></small>
+    </form>
+  </div>
   <aside class="admin-sidebar">
     <a class="admin-brand" href="index.html"><span>●</span><strong>산속농원</strong><small>판매 관리</small></a>
     <nav>
@@ -21,7 +31,6 @@
   <main class="admin-main">
     <header>
       <div><p id="pageEyebrow">OVERVIEW</p><h1 id="pageTitle">판매 현황</h1></div>
-      <span class="local-badge">이 브라우저에 자동 저장됨</span>
     </header>
 
     <section class="admin-page active" id="dashboardPage">
@@ -35,13 +44,25 @@
         <div class="panel-title"><div><p>RECENT ORDERS</p><h2>최근 주문</h2></div><button data-go="orders">전체 보기</button></div>
         <div id="recentOrders"></div>
       </div>
-      <div class="guide"><strong>처음 사용하시나요?</strong><p>① 판매 정보에서 연락처와 배송 안내 입력 → ② 상품 상태를 판매중으로 변경 → ③ 접수된 주문 확인</p></div>
     </section>
 
     <section class="admin-page" id="productsPage">
       <div class="panel">
         <div class="panel-title"><div><p>CATALOG</p><h2>상품 목록</h2></div><button class="primary" id="addProduct">+ 상품 추가</button></div>
-        <div class="table-wrap"><table><thead><tr><th>상품</th><th>품종</th><th>구분</th><th>가격</th><th>판매 상태</th><th></th></tr></thead><tbody id="productRows"></tbody></table></div>
+        <div class="product-tools">
+          <div class="product-filters">
+            <input id="productSearch" type="search" placeholder="상품명 검색" aria-label="상품 검색">
+            <select id="productVarietyFilter" aria-label="품종 필터"><option value="all">모든 품종</option><option>썸머킹</option><option>홍로</option><option>부사</option></select>
+            <select id="productCategoryFilter" aria-label="구분 필터"><option value="all">모든 구분</option><option value="gift">선물용</option><option value="bgrade">가정용</option></select>
+            <select id="productStatusFilter" aria-label="판매 상태 필터"><option value="all">모든 상태</option><option>판매중</option><option>예약판매</option><option>품절</option><option>판매종료</option></select>
+          </div>
+          <div class="bulk-actions">
+            <strong><span id="selectedProductCount">0</span>개 선택</strong>
+            <select id="bulkProductStatus" aria-label="일괄 변경할 판매 상태"><option value="">변경할 상태</option><option>판매중</option><option>예약판매</option><option>품절</option><option>판매종료</option></select>
+            <button id="applyBulkProductStatus" class="primary">선택 상품 변경</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th class="check-cell"><input id="selectAllProducts" type="checkbox" aria-label="현재 상품 전체 선택"></th><th>상품</th><th>품종</th><th>구분</th><th>가격</th><th>판매 상태</th><th></th></tr></thead><tbody id="productRows"></tbody></table></div>
       </div>
     </section>
 
@@ -74,9 +95,9 @@
               <p>주문 문의, 배송, 교환·환불 안내에 표시되는 정보입니다.</p>
             </div>
             <div class="form-grid">
-              <label class="wide">주문 문의 전화번호<span class="field-location">주문 문의 문구와 전화·문자 버튼에 표시</span><input name="orderPhone" placeholder="예: 010-0000-0000"></label>
-              <label class="wide">배송 안내<span class="field-location">배송 안내와 상품 상세 모달에 표시</span><textarea name="shipping" rows="4"></textarea></label>
-              <label class="wide">교환·환불 안내<span class="field-location">교환·환불 안내와 상품 상세 모달에 표시</span><textarea name="refund" rows="4"></textarea></label>
+              <label class="wide">주문 문의 전화번호<input name="orderPhone" placeholder="예: 010-0000-0000"></label>
+              <label class="wide">배송 안내<textarea name="shipping" rows="4"></textarea></label>
+              <label class="wide">교환·환불 안내<textarea name="refund" rows="4"></textarea></label>
             </div>
           </section>
           <section class="settings-section">
@@ -86,10 +107,12 @@
               <p>사이트 가장 아래의 판매자 정보에 함께 표시됩니다.</p>
             </div>
             <div class="form-grid">
-              <label>판매자 전화번호<span class="field-location">푸터의 판매자 정보에 표시</span><input name="sellerPhone" placeholder="예: 043-000-0000"></label>
-              <label>대표자명<span class="field-location">푸터의 판매자 정보에 표시</span><input name="representative" placeholder="나중에 입력"></label>
-              <label>사업자등록번호<span class="field-location">푸터의 판매자 정보에 표시</span><input name="businessNumber" placeholder="나중에 입력"></label>
-              <label>통신판매업 신고번호<span class="field-location">푸터의 판매자 정보에 표시</span><input name="mailOrderNumber" placeholder="나중에 입력"></label>
+              <label>사업장명<input name="businessName" placeholder="예: 산속농원(산속 놀이터)"></label>
+              <label>사업장 주소<input name="businessAddress" placeholder="예: 충북 제천시 한수면 봉화재길 597"></label>
+              <label>판매자 전화번호<input name="sellerPhone" placeholder="예: 043-000-0000"></label>
+              <label>대표자명<input name="representative" placeholder="나중에 입력"></label>
+              <label>사업자등록번호<input name="businessNumber" placeholder="나중에 입력"></label>
+              <label>통신판매업 신고번호<input name="mailOrderNumber" placeholder="나중에 입력"></label>
             </div>
           </section>
         </div>
@@ -113,10 +136,18 @@
         <label>판매 상태<select name="status"><option>판매중</option><option>예약판매</option><option>품절</option><option>판매종료</option></select></label>
       </div>
       <label>품종<select name="variety"><option>썸머킹</option><option>홍로</option><option>부사</option></select></label>
+      <label class="product-image-field">상세페이지 실제 상품 사진
+        <input id="productImageInput" type="file" accept="image/jpeg,image/png,image/webp">
+        <span>선택한 사진은 상세페이지에만 표시됩니다. 상품 목록은 기존 아이콘을 유지합니다.</span>
+      </label>
+      <div class="product-image-preview" id="productImagePreview"><span>등록된 사진 없음</span></div>
       <button class="save-product" value="default">상품 저장</button>
     </form>
   </dialog>
   <div class="admin-toast" id="adminToast"></div>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

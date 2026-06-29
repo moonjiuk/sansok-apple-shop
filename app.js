@@ -11,8 +11,25 @@ const baseProducts = [
 const varieties = [
   { name: "썸머킹", code: 100, harvest: "7월 25일~8월 10일", start: [7, 25], end: [8, 10] },
   { name: "홍로", code: 200, harvest: "9월 22일~26일", start: [9, 22], end: [9, 26] },
-  { name: "부사", code: 300, harvest: "11월 17일~12월 31일", start: [11, 17], end: [12, 31] }
+  { name: "부사", code: 300, harvest: "11월 17일~30일", start: [11, 17], end: [11, 30] }
 ];
+const varietyDetails = {
+  썸머킹: {
+    taste: "여름에 만나는 새콤달콤한 맛과 산뜻한 향",
+    texture: "아삭하고 과즙이 풍부한 편",
+    storage: "받은 뒤 냉장 보관하고 가급적 신선할 때 드세요."
+  },
+  홍로: {
+    taste: "단맛이 풍부하고 산미가 적어 편안한 맛",
+    texture: "부드럽게 아삭하며 과즙이 풍부한 편",
+    storage: "냉장 보관하고 신선도가 좋을 때 드시는 것을 권합니다."
+  },
+  부사: {
+    taste: "단맛과 산미가 조화롭고 향이 진한 편",
+    texture: "단단하고 아삭해 오래 두고 즐기기 좋음",
+    storage: "한 알씩 감싸 냉장 보관하면 신선도 유지에 도움이 됩니다."
+  }
+};
 const defaultProducts = varieties.flatMap(variety => baseProducts.map((product, index) => ({
   ...product, id: variety.code + index + 1, name: `${variety.name} ${product.name}`,
   variety: variety.name, harvest: variety.harvest,
@@ -22,6 +39,8 @@ const defaultProducts = varieties.flatMap(variety => baseProducts.map((product, 
 const defaultSettings = {
   orderPhone: "",
   sellerPhone: "",
+  businessName: "산속농원(산속 놀이터)",
+  businessAddress: "충청북도 제천시 한수면 봉화재길 597",
   shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
   refund: "상품 이상·파손·오배송은 수령 후 24시간 이내 사진과 함께 연락해 주세요. 확인 후 교환 또는 환불해 드립니다. 신선식품 특성상 단순 변심, 주소 오기재, 연락 두절, 보관 부주의로 인한 변질은 교환·환불이 어렵습니다. 반품 전 반드시 판매자와 협의해 주세요.",
   representative: "",
@@ -29,7 +48,7 @@ const defaultSettings = {
   mailOrderNumber: ""
 };
 
-const catalogVersion = "4";
+const catalogVersion = "5";
 const storedCatalogVersion = localStorage.getItem("sansok-catalog-version");
 if (storedCatalogVersion === "3") {
   const storedProducts = JSON.parse(localStorage.getItem("sansok-products") || "[]");
@@ -50,6 +69,8 @@ let products = JSON.parse(localStorage.getItem("sansok-products") || "null") || 
 let settings = JSON.parse(localStorage.getItem("sansok-settings") || "null") || defaultSettings;
 if (!settings.orderPhone && settings.phone) settings.orderPhone = settings.phone;
 if (!Object.hasOwn(settings, "sellerPhone")) settings.sellerPhone = "";
+if (!Object.hasOwn(settings, "businessName")) settings.businessName = defaultSettings.businessName;
+if (!Object.hasOwn(settings, "businessAddress")) settings.businessAddress = defaultSettings.businessAddress;
 delete settings.phone;
 if (!settings.shipping || settings.shipping === "배송비와 출고 요일을 준비 중입니다. 주문 확인 후 안내드립니다.") settings.shipping = defaultSettings.shipping;
 if (!settings.refund || settings.refund === "파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.") settings.refund = defaultSettings.refund;
@@ -194,12 +215,14 @@ function renderSettings() {
   document.querySelector("#shippingInfo").textContent = settings.shipping;
   document.querySelector("#refundInfo").textContent = settings.refund;
   const seller = [
+    settings.businessName && `사업장명 ${settings.businessName}`,
+    settings.businessAddress && `사업장 주소 ${settings.businessAddress}`,
     settings.sellerPhone && `전화 ${settings.sellerPhone}`,
     settings.representative && `대표자 ${settings.representative}`,
     settings.businessNumber && `사업자등록번호 ${settings.businessNumber}`,
     settings.mailOrderNumber && `통신판매업 ${settings.mailOrderNumber}`
   ].filter(Boolean);
-  document.querySelector("#businessInfo").textContent = seller.length ? seller.join(" · ") : "판매자 전화번호·대표자·사업자 정보를 준비 중입니다.";
+  document.querySelector("#businessInfo").textContent = seller.length ? seller.join(" · ") : "사업장명·주소·판매자 정보를 준비 중입니다.";
   if (settings.orderPhone) {
     const number = settings.orderPhone.replace(/[^0-9+]/g, "");
     document.querySelector("#phoneLink").href = `tel:${number}`;
@@ -212,16 +235,37 @@ function setCartOpen(open) {
   document.querySelector("#cartDrawer").setAttribute("aria-hidden", String(!open));
 }
 
-function openProductDetail(id) {
+async function openProductDetail(id) {
   const product = products.find(item => item.id === id);
   if (!product) return;
   const variety = varieties.find(item => item.name === product.variety);
+  const profile = varietyDetails[product.variety];
   const status = getEffectiveStatus(product, getSeasonStatus(variety));
   const disabled = status === "품절" || status === "판매종료";
+  const isGift = product.category === "gift";
+  const usageTitle = isGift ? "선물용" : "가정용";
+  const usageDescription = isGift
+    ? "색과 모양, 크기가 비교적 고른 사과를 선별해 담아 선물하기 좋은 구성입니다."
+    : "작은 흠집이나 색·모양의 차이가 있을 수 있지만 맛과 신선도에는 문제가 없는 실속 구성입니다.";
+  const relatedProducts = products
+    .filter(item => item.variety === product.variety && item.category === product.category)
+    .sort((a, b) => a.price - b.price);
+  const sizeOptions = relatedProducts.map(item => `
+    <li class="${item.id === product.id ? "active" : ""}">
+      <span>${item.size}</span><strong>${won(item.price)}</strong>
+    </li>`).join("");
+  const contact = settings.orderPhone
+    ? `<a href="tel:${settings.orderPhone.replace(/[^0-9+]/g, "")}">${settings.orderPhone}</a>`
+    : "주문 문의 전화번호를 준비 중입니다.";
   document.querySelector("#productDetailContent").innerHTML = `
     <button class="dialog-close" id="productDetailClose" type="button" aria-label="상품 상세 닫기">×</button>
     <section class="detail-layout">
-      <div class="detail-visual"><span class="badge">${product.badge}</span><span class="sale-status status-${status}">${status}</span></div>
+      <div>
+        <div class="detail-photo-gallery">
+          <div class="detail-photo-main" id="detailPhotoMain"><span class="badge">${product.badge}</span><span class="sale-status status-${status}">${status}</span><strong>실제 상품 사진</strong><small>사진 준비 중</small></div>
+        </div>
+        <p class="detail-photo-note">실제 수확한 사과와 포장 사진만 상세페이지에 표시합니다.</p>
+      </div>
       <div class="detail-copy">
         <span class="eyebrow">${product.variety} · SANSOK APPLE FARM</span>
         <h2>${product.name}</h2>
@@ -235,13 +279,40 @@ function openProductDetail(id) {
           <div><dt>판매 상태</dt><dd>${status}</dd></div>
         </dl>
         <button class="detail-order-button" data-add="${product.id}" ${disabled ? "disabled" : ""}>${disabled ? status : "장바구니 담기"}</button>
+        <p class="detail-quantity-note">장바구니에서 주문 수량을 변경할 수 있습니다.</p>
       </div>
     </section>
-    <section class="detail-guides">
-      <article><h2>배송 안내</h2><p>${settings.shipping}</p></article>
-      <article><h2>교환·환불 기준</h2><p>${settings.refund}</p></article>
+    <section class="detail-product-guide">
+      <div class="detail-product-guide-copy">
+        <article><span>VARIETY</span><h2>${product.variety}의 맛과 식감</h2><p>${profile.taste}이며 ${profile.texture}입니다.</p></article>
+        <article><span>GRADE</span><h2>${usageTitle} 구성의 특징</h2><p>${usageDescription}</p></article>
+      </div>
+      <article class="detail-size-options">
+        <span>SIZE OPTIONS</span><h2>${product.variety} ${usageTitle}으로 가능한 구성</h2>
+        <p>같은 무게라면 과수가 적을수록 한 알의 크기가 큽니다. 현재 보고 있는 상품을 강조해 표시했습니다.</p>
+        <ul>${sizeOptions}</ul>
+      </article>
+    </section>
+    <section class="detail-guides detail-service-guides">
+      <article><span>PRODUCT</span><h2>상품·보관 안내</h2><p>${profile.taste}. ${profile.texture}.</p><p>${profile.storage} 사과는 씻지 않은 상태로 다른 과일과 분리해 보관해 주세요.</p></article>
+      <article><span>DELIVERY</span><h2>배송 안내</h2><p>${settings.shipping}</p><p>수확·선별 후 안전하게 포장하며, 기상과 작황에 따라 일정이 달라질 수 있습니다.</p></article>
+      <article><span>EXCHANGE & REFUND</span><h2>교환·환불 기준</h2><p>${settings.refund}</p><p>문제가 있는 상품과 택배 상자가 함께 보이도록 사진을 남겨 주세요.</p></article>
+      <article><span>CONTACT</span><h2>주문 문의</h2><p>${contact}</p><p>상품 구성이나 출하 일정이 궁금하면 주문 전에 문의해 주세요.</p></article>
     </section>`;
   document.querySelector("#productDetailDialog").showModal();
+  try {
+    const imageData = await window.sansokFirebase.loadProductImage(product.id);
+    if (imageData && document.querySelector("#productDetailDialog").open) {
+      const photo = document.querySelector("#detailPhotoMain");
+      const image = document.createElement("img");
+      image.src = imageData;
+      image.alt = `${product.name} 실제 상품 사진`;
+      photo.classList.add("has-photo");
+      photo.prepend(image);
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 function maskName(name = "") {
@@ -254,9 +325,18 @@ function maskPhone(phone = "") {
   return digits.length >= 8 ? `${digits.slice(0, 3)}-****-${digits.slice(-4)}` : "****";
 }
 
-function renderMyOrders() {
-  const orders = JSON.parse(localStorage.getItem("sansok-orders") || "[]")
-    .filter(order => myOrderIds.includes(order.id));
+async function renderMyOrders() {
+  let orders = JSON.parse(localStorage.getItem("sansok-orders") || "[]");
+  try {
+    const remote = await window.sansokFirebase.load();
+    if (remote.orders) {
+      orders = remote.orders;
+      localStorage.setItem("sansok-orders", JSON.stringify(orders));
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  orders = orders.filter(order => myOrderIds.includes(order.id));
   const list = document.querySelector("#myOrderList");
   if (!orders.length) {
     list.innerHTML = `<div class="my-orders-empty"><span>🍎</span><p>이 기기에서 주문한 내역이 없습니다.</p></div>`;
@@ -381,7 +461,21 @@ document.querySelectorAll("dialog").forEach(dialog => {
 });
 document.querySelector("#checkoutForm").addEventListener("submit", event => {
   event.preventDefault();
-  if (!event.currentTarget.reportValidity()) return;
+  const invalidField = [...event.currentTarget.elements].find(field => field.required && !field.checkValidity());
+  if (invalidField) {
+    const labels = {
+      name: "받으실 분 이름",
+      phone: "연락처",
+      postcode: "우편번호와 기본주소",
+      addressBase: "배송 주소",
+      addressDetail: "상세주소",
+      paymentMethod: "결제수단",
+      paymentAgreement: "결제 동의"
+    };
+    alert(`${labels[invalidField.name] || "필수 항목"}을(를) 입력하거나 확인해 주세요.`);
+    invalidField.focus();
+    return;
+  }
   const formData = new FormData(event.currentTarget);
   const customer = Object.fromEntries(formData.entries());
   delete customer.paymentAgreement;
@@ -408,7 +502,7 @@ document.querySelector("#paymentMockBack").addEventListener("click", () => {
 document.querySelector("#paymentMockClose").addEventListener("click", () => {
   document.querySelector("#paymentMockDialog").close();
 });
-document.querySelector("#mockPayComplete").addEventListener("click", () => {
+document.querySelector("#mockPayComplete").addEventListener("click", async () => {
   if (!pendingOrder) return;
   const button = document.querySelector("#mockPayComplete");
   button.disabled = true;
@@ -421,6 +515,15 @@ document.querySelector("#mockPayComplete").addEventListener("click", () => {
   const orders = JSON.parse(localStorage.getItem("sansok-orders") || "[]");
   orders.unshift(pendingOrder);
   localStorage.setItem("sansok-orders", JSON.stringify(orders));
+  try {
+    await window.sansokFirebase.saveOrders(orders);
+  } catch (error) {
+    console.error(error);
+    button.disabled = false;
+    button.textContent = "테스트 결제 완료";
+    showToast("주문 저장에 실패했습니다. 인터넷 연결을 확인해 주세요.");
+    return;
+  }
   myOrderIds.unshift(pendingOrder.id);
   localStorage.setItem("sansok-my-order-ids", JSON.stringify(myOrderIds));
   const completedOrderId = pendingOrder.id;
@@ -441,6 +544,30 @@ window.addEventListener("storage", event => {
   if (event.key === "sansok-products" || event.key === "sansok-settings") location.reload();
 });
 
-renderProducts();
-renderSettings();
-renderCart();
+async function initializeStore() {
+  renderProducts();
+  renderSettings();
+  renderCart();
+  try {
+    const remote = await window.sansokFirebase.load();
+    if (remote.products) {
+      products = remote.products.map(product => product.variety === "부사"
+        ? { ...product, harvest: "11월 17일~30일" }
+        : product);
+      localStorage.setItem("sansok-products", JSON.stringify(products));
+    }
+    if (remote.settings) {
+      settings = { ...defaultSettings, ...remote.settings };
+      delete settings.updatedAt;
+      localStorage.setItem("sansok-settings", JSON.stringify(settings));
+    }
+    renderProducts();
+    renderSettings();
+    renderCart();
+  } catch (error) {
+    console.error(error);
+    showToast("Firebase 연결에 실패해 이 기기에 저장된 정보를 표시합니다.");
+  }
+}
+
+initializeStore();

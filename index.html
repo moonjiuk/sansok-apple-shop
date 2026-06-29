@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="announcement">2026년 출하 일정 · 썸머킹 7월 25일~8월 10일 · 홍로 9월 22일~26일 · 부사 11월 17일부터 <button aria-label="알림 닫기" onclick="this.parentElement.remove()">×</button></div>
+  <div class="announcement">2026년 출하 일정 · 썸머킹 7월 25일~8월 10일 · 홍로 9월 22일~26일 · 부사 11월 17일~30일 <button aria-label="알림 닫기" onclick="this.parentElement.remove()">×</button></div>
 
   <header class="site-header">
     <a class="logo" href="#top" aria-label="산속농원 홈">
@@ -20,7 +20,7 @@
     </a>
     <nav aria-label="주요 메뉴">
       <a href="#shop">사과 고르기</a>
-      <a href="#story">농원 이야기</a>
+      <a href="#appleGuide">사과 선택 가이드</a>
       <a href="#reviews">수확 안내</a>
       <a href="#contact">주문·배송 안내</a>
     </nav>
@@ -40,7 +40,7 @@
         <p>제천시 한수면 봉화재길의 맑은 공기 속에서 키웠어요.<br>산속농원의 홍로와 부사를 수확 철에 맞춰 보내드립니다.</p>
         <div class="hero-actions">
           <a class="primary-button" href="#shop">올해의 사과 만나기 <span>→</span></a>
-          <span class="delivery-note">🍏 썸머킹 <strong>7/25~8/10</strong> · 홍로 <strong>9/22~26</strong> · 부사 <strong>11/17~</strong></span>
+          <span class="delivery-note">🍏 썸머킹 <strong>7/25~8/10</strong> · 홍로 <strong>9/22~26</strong> · 부사 <strong>11/17~30</strong></span>
         </div>
       </div>
       <div class="hero-visual" aria-label="나뭇가지에 열린 탐스러운 빨간 사과">
@@ -74,19 +74,39 @@
       <div class="product-groups" id="productGrid"></div>
     </section>
 
-    <section class="story section" id="story">
-      <div class="story-art">
-        <div class="orchard-lines"></div>
-        <div class="story-apple">●</div>
-        <span>충북 제천<br>한수면 봉화재길 597</span>
+    <section class="apple-guide section" id="appleGuide">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">APPLE SHOPPING GUIDE</span>
+          <h2>내게 맞는 사과 고르기</h2>
+        </div>
+        <p class="guide-intro">품종의 맛부터 용도와 크기까지<br>주문 전에 간단히 비교해 보세요.</p>
       </div>
-      <div class="story-copy">
-        <span class="eyebrow">OUR ORCHARD</span>
-        <h2>산속의 바람과 햇살로<br>튼튼하게 키웁니다.</h2>
-        <p>충청북도 제천시 한수면 봉화재길 597. 산과 가까운 농원에서 홍로와 부사를 정성껏 재배합니다. 선물하기 좋은 고른 사과부터 맛은 그대로인 실속 가정용까지 용도에 맞게 골라보세요.</p>
-        <div class="farmer">
-          <div class="farmer-avatar">農</div>
-          <div><strong>산속농원</strong><span>산속 놀이터 · 제천 사과 재배 농가</span></div>
+
+      <div class="guide-block">
+        <div class="guide-block-title"><span>01</span><h3>품종별 맛과 식감</h3></div>
+        <div class="taste-guide-grid">
+          <article><strong>썸머킹</strong><h4>산뜻한 새콤달콤함</h4><p>여름에 만나는 향긋한 사과로, 아삭하고 과즙이 풍부한 편입니다.</p><small>상큼함 ●●● · 단맛 ●●○</small></article>
+          <article><strong>홍로</strong><h4>부드럽고 풍부한 단맛</h4><p>산미가 적고 단맛이 편안해 남녀노소 부담 없이 즐기기 좋습니다.</p><small>상큼함 ●○○ · 단맛 ●●●</small></article>
+          <article><strong>부사</strong><h4>진한 향과 단단한 식감</h4><p>단맛과 산미가 조화롭고 단단하게 아삭해 오래 두고 즐기기 좋습니다.</p><small>상큼함 ●●○ · 단맛 ●●●</small></article>
+        </div>
+      </div>
+
+      <div class="guide-block guide-choice-block">
+        <div class="guide-block-title"><span>02</span><h3>용도와 크기 선택</h3></div>
+        <div class="choice-guide-grid">
+          <article class="grade-guide">
+            <div><span>GIFT</span><h4>선물용</h4><p>색과 모양, 크기가 비교적 고른 사과를 선별해 담습니다. 감사한 분께 보내는 선물에 추천합니다.</p></div>
+            <div><span>HOME</span><h4>가정용</h4><p>작은 흠집이나 색·모양 차이가 있을 수 있지만 맛과 신선도에는 문제가 없는 실속 구성입니다.</p></div>
+          </article>
+          <article class="size-guide">
+            <div class="apple-size-row" aria-hidden="true">
+              <span class="size-large">●</span><span class="size-medium">●</span><span class="size-small">●</span>
+            </div>
+            <h4>과수가 적을수록 사과가 큽니다</h4>
+            <p>같은 무게의 상자라면 22과처럼 과수가 적은 구성이 큰 사과이고, 60과처럼 과수가 많은 구성이 작은 사과입니다.</p>
+            <small>농산물 특성상 실제 크기와 개수에는 약간의 차이가 생길 수 있습니다.</small>
+          </article>
         </div>
       </div>
     </section>
@@ -99,7 +119,7 @@
       <div class="review-grid">
         <article><div class="stars">SUMMER KING</div><p>여름에 만나는 산뜻한 사과 썸머킹도 산속농원에서 재배하고 있습니다.</p><span>썸머킹 출하 · 7월 25일~8월 10일</span></article>
         <article><div class="stars">HONGRO</div><p>새콤달콤하고 향긋한 홍로는 9월 22일부터 26일까지 수확합니다.</p><span>홍로 수확 · 9월 22일~26일</span></article>
-        <article><div class="stars">FUJI</div><p>단단하고 달콤해 오래 두고 즐기기 좋은 부사는 11월 17일부터 수확합니다.</p><span>부사 수확 · 11월 17일부터</span></article>
+        <article><div class="stars">FUJI</div><p>단단하고 달콤해 오래 두고 즐기기 좋은 부사는 11월 17일부터 30일까지 출하합니다.</p><span>부사 출하 · 11월 17일~30일</span></article>
         <article><div class="stars">ORDER NOTE</div><p>작황과 수확 상황에 따라 출고일이 달라질 수 있으며, 세부 일정은 주문 확인 후 안내드립니다.</p><span>산속농원 출고 안내</span></article>
       </div>
     </section>
@@ -108,7 +128,7 @@
       <div class="section-heading">
         <div><span class="eyebrow">ORDER & DELIVERY</span><h2>주문 전 확인해 주세요</h2></div>
         <div class="contact-actions">
-          <a class="primary-button" id="phoneLink" href="#contact">전화 주문 <span>→</span></a>
+          <a class="primary-button" id="phoneLink" href="#contact">전화 문의 <span>→</span></a>
           <a class="outline-button" id="messageLink" href="#contact">문자 문의</a>
         </div>
       </div>
@@ -123,7 +143,6 @@
   <footer>
     <div class="logo"><span class="logo-fruit">●</span><span>산속농원</span></div>
     <div class="footer-info">
-      <p>산속 놀이터 · 충청북도 제천시 한수면 봉화재길 597<br>홍로 9월 22일~26일 · 부사 11월 17일부터</p>
       <p><strong>판매자 정보</strong><span id="businessInfo">판매자 전화번호·대표자·사업자 정보를 준비 중입니다.</span></p>
     </div>
     <p class="footer-copyright">© 2026 Sansok Apple Farm.</p>
@@ -145,7 +164,7 @@
   </aside>
 
   <dialog id="checkoutDialog">
-    <form method="dialog" id="checkoutForm">
+    <form method="dialog" id="checkoutForm" novalidate>
       <button class="dialog-close" id="checkoutDialogClose" type="button" aria-label="주문창 닫기">×</button>
       <span class="eyebrow">CHECKOUT</span>
       <h2>받으실 분을 알려주세요</h2>
@@ -213,6 +232,9 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

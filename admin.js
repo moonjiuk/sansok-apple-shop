@@ -11,18 +11,18 @@ const baseProducts = [
 const varietySeeds = [
   { name:"썸머킹",code:100,harvest:"7월 25일~8월 10일" },
   { name:"홍로",code:200,harvest:"9월 22일~26일" },
-  { name:"부사",code:300,harvest:"11월 17일부터" }
+  { name:"부사",code:300,harvest:"11월 17일~30일" }
 ];
 const fallbackProducts = varietySeeds.flatMap(variety => baseProducts.map((product,index) => ({
   ...product,id:variety.code+index+1,name:`${variety.name} ${product.name}`,variety:variety.name,harvest:variety.harvest,
   badge:product.category==="gift"?"선물용":"가정용",status:"예약판매"
 })));
 const fallbackSettings = {
-  orderPhone: "", sellerPhone: "", shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
+  orderPhone: "", sellerPhone: "", businessName: "산속농원(산속 놀이터)", businessAddress: "충청북도 제천시 한수면 봉화재길 597", shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
   refund: "상품 이상·파손·오배송은 수령 후 24시간 이내 사진과 함께 연락해 주세요. 확인 후 교환 또는 환불해 드립니다. 신선식품 특성상 단순 변심, 주소 오기재, 연락 두절, 보관 부주의로 인한 변질은 교환·환불이 어렵습니다. 반품 전 반드시 판매자와 협의해 주세요.",
   representative: "", businessNumber: "", mailOrderNumber: ""
 };
-const catalogVersion = "4";
+const catalogVersion = "5";
 const storedCatalogVersion = localStorage.getItem("sansok-catalog-version");
 if (storedCatalogVersion === "3") {
   const storedProducts = JSON.parse(localStorage.getItem("sansok-products") || "[]");
@@ -44,6 +44,8 @@ let orders = JSON.parse(localStorage.getItem("sansok-orders") || "[]");
 let settings = JSON.parse(localStorage.getItem("sansok-settings") || "null") || fallbackSettings;
 if (!settings.orderPhone && settings.phone) settings.orderPhone = settings.phone;
 if (!Object.hasOwn(settings, "sellerPhone")) settings.sellerPhone = "";
+if (!Object.hasOwn(settings, "businessName")) settings.businessName = fallbackSettings.businessName;
+if (!Object.hasOwn(settings, "businessAddress")) settings.businessAddress = fallbackSettings.businessAddress;
 delete settings.phone;
 if (!settings.shipping || settings.shipping === "배송비와 출고 요일을 준비 중입니다. 주문 확인 후 안내드립니다.") settings.shipping = fallbackSettings.shipping;
 if (!settings.refund || settings.refund === "파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.") settings.refund = fallbackSettings.refund;
@@ -51,8 +53,20 @@ localStorage.setItem("sansok-settings", JSON.stringify(settings));
 const won = value => `${Number(value).toLocaleString("ko-KR")}원`;
 const dateText = value => new Date(value).toLocaleString("ko-KR", { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
 
-function saveProducts() { localStorage.setItem("sansok-products", JSON.stringify(products)); renderAll(); }
-function saveOrders() { localStorage.setItem("sansok-orders", JSON.stringify(orders)); renderAll(); }
+function reportFirebaseError(error) {
+  console.error(error);
+  toast("Firebase 저장에 실패했습니다. 인터넷 연결을 확인해 주세요.");
+}
+function saveProducts() {
+  localStorage.setItem("sansok-products", JSON.stringify(products));
+  renderAll();
+  window.sansokFirebase.saveProducts(products).catch(reportFirebaseError);
+}
+function saveOrders() {
+  localStorage.setItem("sansok-orders", JSON.stringify(orders));
+  renderAll();
+  window.sansokFirebase.saveOrders(orders).catch(reportFirebaseError);
+}
 function toast(message) {
   const el = document.querySelector("#adminToast");
   el.textContent = message; el.classList.add("show");
@@ -82,10 +96,23 @@ function renderOrders() {
   updateSelectedCount();
 }
 function renderProducts() {
-  document.querySelector("#productRows").innerHTML = products.map(product => `<tr>
+  const query = document.querySelector("#productSearch").value.trim().toLowerCase();
+  const variety = document.querySelector("#productVarietyFilter").value;
+  const category = document.querySelector("#productCategoryFilter").value;
+  const status = document.querySelector("#productStatusFilter").value;
+  const filtered = products.filter(product =>
+    (!query || `${product.name} ${product.desc}`.toLowerCase().includes(query)) &&
+    (variety === "all" || product.variety === variety) &&
+    (category === "all" || product.category === category) &&
+    (status === "all" || product.status === status)
+  );
+  document.querySelector("#productRows").innerHTML = filtered.length ? filtered.map(product => `<tr>
+    <td class="check-cell"><input class="product-select" type="checkbox" value="${product.id}" aria-label="${product.name} 선택"></td>
     <td><strong>${product.name}</strong><small>${product.desc}</small></td><td>${product.variety}</td><td>${product.category==="gift"?"선물용":"가정용"}</td>
     <td><strong>${won(product.price)}</strong></td><td><select class="status-select" data-product-status="${product.id}">${["판매중","예약판매","품절","판매종료"].map(status => `<option ${status===product.status?"selected":""}>${status}</option>`).join("")}</select></td>
-    <td class="row-actions"><button data-edit-product="${product.id}">수정</button><button data-delete-product="${product.id}">삭제</button></td></tr>`).join("");
+    <td class="row-actions"><button data-edit-product="${product.id}">수정</button><button data-delete-product="${product.id}">삭제</button></td></tr>`).join("") : `<tr><td colspan="7" class="table-empty">조건에 맞는 상품이 없습니다.</td></tr>`;
+  document.querySelector("#selectAllProducts").checked = false;
+  updateSelectedProductCount();
 }
 function renderSettings() {
   Object.entries(settings).forEach(([key,value]) => {
@@ -94,9 +121,17 @@ function renderSettings() {
   });
 }
 function renderAll() { renderDashboard(); renderProducts(); renderOrders(); }
-function openProduct(product = {}) {
+let pendingProductImage = null;
+function showProductImagePreview(imageData) {
+  document.querySelector("#productImagePreview").innerHTML = imageData
+    ? `<img src="${imageData}" alt="등록할 실제 상품 사진 미리보기">`
+    : "<span>등록된 사진 없음</span>";
+}
+async function openProduct(product = {}) {
   const form = document.querySelector("#productForm");
   form.reset();
+  pendingProductImage = null;
+  showProductImagePreview(null);
   form.elements.id.value = product.id || "";
   form.elements.name.value = product.name || "";
   form.elements.desc.value = product.desc || "";
@@ -106,6 +141,37 @@ function openProduct(product = {}) {
   form.elements.status.value = product.status || "예약판매";
   form.elements.variety.value = product.variety || "썸머킹";
   document.querySelector("#productDialog").showModal();
+  if (product.id) {
+    try {
+      const imageData = await window.sansokFirebase.loadProductImage(product.id);
+      if (form.elements.id.value === String(product.id)) showProductImagePreview(imageData);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+}
+function resizeProductImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("사진을 읽지 못했습니다."));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("지원하지 않는 사진 형식입니다."));
+      image.onload = () => {
+        const maxSize = 1200;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL("image/jpeg", .76);
+        if (imageData.length > 850000) reject(new Error("사진 용량이 큽니다. 더 작은 사진을 선택해 주세요."));
+        else resolve(imageData);
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 function showPage(page) {
   document.querySelectorAll(".admin-page").forEach(section => section.classList.remove("active"));
@@ -117,6 +183,9 @@ function showPage(page) {
 }
 function updateSelectedCount() {
   document.querySelector("#selectedOrderCount").textContent = document.querySelectorAll(".order-select:checked").length;
+}
+function updateSelectedProductCount() {
+  document.querySelector("#selectedProductCount").textContent = document.querySelectorAll(".product-select:checked").length;
 }
 
 document.addEventListener("click", event => {
@@ -139,6 +208,7 @@ document.addEventListener("change", event => {
     order.status = event.target.value; saveOrders(); toast("주문 상태를 변경했습니다.");
   }
   if (event.target.classList.contains("order-select")) updateSelectedCount();
+  if (event.target.classList.contains("product-select")) updateSelectedProductCount();
 });
 document.querySelector("#addProduct").addEventListener("click", () => openProduct());
 document.querySelector("#productDialogClose").addEventListener("click", () => document.querySelector("#productDialog").close());
@@ -147,7 +217,18 @@ document.querySelectorAll("dialog").forEach(dialog => {
     if (event.target === dialog) dialog.close();
   });
 });
-document.querySelector("#productForm").addEventListener("submit", event => {
+document.querySelector("#productImageInput").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    pendingProductImage = await resizeProductImage(file);
+    showProductImagePreview(pendingProductImage);
+  } catch (error) {
+    event.target.value = "";
+    toast(error.message);
+  }
+});
+document.querySelector("#productForm").addEventListener("submit", async event => {
   event.preventDefault();
   if (!event.currentTarget.reportValidity()) return;
   const data = Object.fromEntries(new FormData(event.currentTarget).entries());
@@ -155,19 +236,49 @@ document.querySelector("#productForm").addEventListener("submit", event => {
     id: data.id ? Number(data.id) : Math.max(0,...products.map(item => item.id))+1,
     name:data.name, desc:data.desc, size:data.size, price:Number(data.price), category:data.category,
     badge:data.category==="gift"?"선물용":"가정용", variety:data.variety,
-    harvest:data.variety==="홍로"?"9월 22일~26일":data.variety==="부사"?"11월 17일~12월 31일":"7월 25일~8월 10일", status:data.status
+    harvest:data.variety==="홍로"?"9월 22일~26일":data.variety==="부사"?"11월 17일~30일":"7월 25일~8월 10일", status:data.status
   };
   const index = products.findIndex(item => item.id === product.id);
   if (index >= 0) products[index] = product; else products.push(product);
-  saveProducts(); document.querySelector("#productDialog").close(); toast("상품 정보를 저장했습니다.");
+  saveProducts();
+  if (pendingProductImage) {
+    try {
+      await window.sansokFirebase.saveProductImage(product.id, pendingProductImage);
+    } catch (error) {
+      reportFirebaseError(error);
+      return;
+    }
+  }
+  document.querySelector("#productDialog").close();
+  toast("상품 정보를 저장했습니다.");
 });
 document.querySelector("#settingsForm").addEventListener("submit", event => {
   event.preventDefault(); settings = Object.fromEntries(new FormData(event.currentTarget).entries());
-  localStorage.setItem("sansok-settings", JSON.stringify(settings)); toast("판매 정보를 저장했습니다.");
+  localStorage.setItem("sansok-settings", JSON.stringify(settings));
+  window.sansokFirebase.saveSettings(settings).catch(reportFirebaseError);
+  toast("판매 정보를 저장했습니다.");
 });
 document.querySelector("#sampleOrder").addEventListener("click", () => {
   orders.unshift({id:`SO-${Date.now().toString().slice(-8)}`,createdAt:new Date().toISOString(),customer:{name:"홍길동",phone:"010-0000-0000",address:"충북 제천시 예시 주소",memo:"배송 전 연락주세요"},items:[{name:"5kg 22과",variety:"홍로",quantity:1,price:80000}],total:80000,status:"신규주문"});
   saveOrders(); toast("기능 확인용 예시 주문을 만들었습니다.");
+});
+document.querySelector("#productSearch").addEventListener("input", renderProducts);
+document.querySelector("#productVarietyFilter").addEventListener("change", renderProducts);
+document.querySelector("#productCategoryFilter").addEventListener("change", renderProducts);
+document.querySelector("#productStatusFilter").addEventListener("change", renderProducts);
+document.querySelector("#selectAllProducts").addEventListener("change", event => {
+  document.querySelectorAll(".product-select").forEach(checkbox => { checkbox.checked = event.target.checked; });
+  updateSelectedProductCount();
+});
+document.querySelector("#applyBulkProductStatus").addEventListener("click", () => {
+  const selected = [...document.querySelectorAll(".product-select:checked")].map(checkbox => Number(checkbox.value));
+  const status = document.querySelector("#bulkProductStatus").value;
+  if (!selected.length) { toast("변경할 상품을 선택해 주세요."); return; }
+  if (!status) { toast("변경할 판매 상태를 선택해 주세요."); return; }
+  products.forEach(product => { if (selected.includes(product.id)) product.status = status; });
+  saveProducts();
+  document.querySelector("#bulkProductStatus").value = "";
+  toast(`${selected.length}개 상품의 판매 상태를 변경했습니다.`);
 });
 document.querySelector("#orderSearch").addEventListener("input", renderOrders);
 document.querySelector("#orderStatusFilter").addEventListener("change", renderOrders);
@@ -186,5 +297,58 @@ document.querySelector("#applyBulkStatus").addEventListener("click", () => {
   toast(`${selected.length}건의 주문 상태를 변경했습니다.`);
 });
 
-renderAll();
-renderSettings();
+let adminInitialized = false;
+async function initializeAdmin() {
+  if (adminInitialized) return;
+  adminInitialized = true;
+  try {
+    const remote = await window.sansokFirebase.load();
+    if (remote.products) {
+      const needsFujiUpdate = remote.products.some(product => product.variety === "부사" && product.harvest !== "11월 17일~30일");
+      products = remote.products.map(product => product.variety === "부사"
+        ? { ...product, harvest: "11월 17일~30일" }
+        : product);
+      localStorage.setItem("sansok-products", JSON.stringify(products));
+      if (needsFujiUpdate) await window.sansokFirebase.saveProducts(products);
+    } else {
+      await window.sansokFirebase.saveProducts(products);
+    }
+    if (remote.settings) {
+      settings = { ...fallbackSettings, ...remote.settings };
+      delete settings.updatedAt;
+      localStorage.setItem("sansok-settings", JSON.stringify(settings));
+    } else {
+      await window.sansokFirebase.saveSettings(settings);
+    }
+    if (remote.orders) {
+      orders = remote.orders;
+      localStorage.setItem("sansok-orders", JSON.stringify(orders));
+    } else {
+      await window.sansokFirebase.saveOrders(orders);
+    }
+  } catch (error) {
+    reportFirebaseError(error);
+  }
+  renderAll();
+  renderSettings();
+}
+
+function unlockAdmin() {
+  sessionStorage.setItem("sansok-admin-unlocked", "1");
+  document.body.classList.remove("admin-locked");
+  document.querySelector("#adminLock").hidden = true;
+  initializeAdmin();
+}
+
+document.body.classList.add("admin-locked");
+document.querySelector("#adminLoginForm").addEventListener("submit", event => {
+  event.preventDefault();
+  if (document.querySelector("#adminPassword").value !== "admin") {
+    document.querySelector("#adminLoginError").textContent = "암호가 올바르지 않습니다.";
+    document.querySelector("#adminPassword").select();
+    return;
+  }
+  unlockAdmin();
+});
+
+if (sessionStorage.getItem("sansok-admin-unlocked") === "1") unlockAdmin();
