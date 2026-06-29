@@ -18,7 +18,7 @@ const fallbackProducts = varietySeeds.flatMap(variety => baseProducts.map((produ
   badge:product.category==="gift"?"선물용":"가정용",status:"예약판매"
 })));
 const fallbackSettings = {
-  phone: "", shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
+  orderPhone: "", sellerPhone: "", shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
   refund: "상품 이상·파손·오배송은 수령 후 24시간 이내 사진과 함께 연락해 주세요. 확인 후 교환 또는 환불해 드립니다. 신선식품 특성상 단순 변심, 주소 오기재, 연락 두절, 보관 부주의로 인한 변질은 교환·환불이 어렵습니다. 반품 전 반드시 판매자와 협의해 주세요.",
   representative: "", businessNumber: "", mailOrderNumber: ""
 };
@@ -42,6 +42,9 @@ if (storedCatalogVersion === "3") {
 let products = JSON.parse(localStorage.getItem("sansok-products") || "null") || fallbackProducts;
 let orders = JSON.parse(localStorage.getItem("sansok-orders") || "[]");
 let settings = JSON.parse(localStorage.getItem("sansok-settings") || "null") || fallbackSettings;
+if (!settings.orderPhone && settings.phone) settings.orderPhone = settings.phone;
+if (!Object.hasOwn(settings, "sellerPhone")) settings.sellerPhone = "";
+delete settings.phone;
 if (!settings.shipping || settings.shipping === "배송비와 출고 요일을 준비 중입니다. 주문 확인 후 안내드립니다.") settings.shipping = fallbackSettings.shipping;
 if (!settings.refund || settings.refund === "파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.") settings.refund = fallbackSettings.refund;
 localStorage.setItem("sansok-settings", JSON.stringify(settings));

@@ -52,8 +52,15 @@ td small { color:var(--muted); margin-top:4px; line-height:1.4; }
 .row-actions button { border:0; background:transparent; color:var(--muted); padding:5px; }
 .row-actions button:hover { color:var(--red); }
 .settings-form { padding-bottom:28px; }
+.settings-sections { display:grid; gap:20px; padding:26px; }
+.settings-section { overflow:hidden; border:1px solid var(--line); border-radius:7px; }
+.settings-section-title { padding:20px 22px; border-bottom:1px solid var(--line); background:#f7f8f4; }
+.settings-section-title span { color:var(--red); font-size:9px; font-weight:800; letter-spacing:.12em; }
+.settings-section-title h3 { margin:6px 0; font-size:18px; }
+.settings-section-title p { margin:0; color:var(--muted); font-size:11px; }
 .form-grid { padding:26px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
 label { display:block; color:#536259; font-size:11px; font-weight:700; }
+.field-location { display:block; min-height:28px; margin-top:5px; color:var(--muted); font-size:10px; font-weight:400; line-height:1.4; }
 input,textarea,select { width:100%; margin-top:7px; padding:12px; border:1px solid var(--line); background:#fff; border-radius:4px; color:var(--ink); outline-color:var(--red); }
 .wide { grid-column:1/-1; }
 dialog { width:min(520px,calc(100% - 30px)); border:0; padding:0; border-radius:8px; box-shadow:0 25px 80px rgba(0,0,0,.3); }

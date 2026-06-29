@@ -66,13 +66,32 @@
     <section class="admin-page" id="settingsPage">
       <form class="panel settings-form" id="settingsForm">
         <div class="panel-title"><div><p>STORE SETTINGS</p><h2>판매 정보</h2></div><button class="primary" type="submit">저장하기</button></div>
-        <div class="form-grid">
-          <label>주문 연락처<input name="phone" placeholder="예: 010-0000-0000"></label>
-          <label>대표자명<input name="representative" placeholder="나중에 입력"></label>
-          <label>사업자등록번호<input name="businessNumber" placeholder="나중에 입력"></label>
-          <label>통신판매업 신고번호<input name="mailOrderNumber" placeholder="나중에 입력"></label>
-          <label class="wide">배송 안내<textarea name="shipping" rows="4"></textarea></label>
-          <label class="wide">교환·환불 안내<textarea name="refund" rows="4"></textarea></label>
+        <div class="settings-sections">
+          <section class="settings-section">
+            <div class="settings-section-title">
+              <span>고객 화면 안내 영역</span>
+              <h3>주문 전 확인해 주세요</h3>
+              <p>주문 문의, 배송, 교환·환불 안내에 표시되는 정보입니다.</p>
+            </div>
+            <div class="form-grid">
+              <label class="wide">주문 문의 전화번호<span class="field-location">주문 문의 문구와 전화·문자 버튼에 표시</span><input name="orderPhone" placeholder="예: 010-0000-0000"></label>
+              <label class="wide">배송 안내<span class="field-location">배송 안내와 상품 상세 모달에 표시</span><textarea name="shipping" rows="4"></textarea></label>
+              <label class="wide">교환·환불 안내<span class="field-location">교환·환불 안내와 상품 상세 모달에 표시</span><textarea name="refund" rows="4"></textarea></label>
+            </div>
+          </section>
+          <section class="settings-section">
+            <div class="settings-section-title">
+              <span>고객 화면 하단</span>
+              <h3>푸터 판매자 정보</h3>
+              <p>사이트 가장 아래의 판매자 정보에 함께 표시됩니다.</p>
+            </div>
+            <div class="form-grid">
+              <label>판매자 전화번호<span class="field-location">푸터의 판매자 정보에 표시</span><input name="sellerPhone" placeholder="예: 043-000-0000"></label>
+              <label>대표자명<span class="field-location">푸터의 판매자 정보에 표시</span><input name="representative" placeholder="나중에 입력"></label>
+              <label>사업자등록번호<span class="field-location">푸터의 판매자 정보에 표시</span><input name="businessNumber" placeholder="나중에 입력"></label>
+              <label>통신판매업 신고번호<span class="field-location">푸터의 판매자 정보에 표시</span><input name="mailOrderNumber" placeholder="나중에 입력"></label>
+            </div>
+          </section>
         </div>
       </form>
     </section>

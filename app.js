@@ -20,7 +20,8 @@ const defaultProducts = varieties.flatMap(variety => baseProducts.map((product, 
 })));
 
 const defaultSettings = {
-  phone: "",
+  orderPhone: "",
+  sellerPhone: "",
   shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
   refund: "상품 이상·파손·오배송은 수령 후 24시간 이내 사진과 함께 연락해 주세요. 확인 후 교환 또는 환불해 드립니다. 신선식품 특성상 단순 변심, 주소 오기재, 연락 두절, 보관 부주의로 인한 변질은 교환·환불이 어렵습니다. 반품 전 반드시 판매자와 협의해 주세요.",
   representative: "",
@@ -47,6 +48,9 @@ if (storedCatalogVersion === "3") {
 }
 let products = JSON.parse(localStorage.getItem("sansok-products") || "null") || defaultProducts;
 let settings = JSON.parse(localStorage.getItem("sansok-settings") || "null") || defaultSettings;
+if (!settings.orderPhone && settings.phone) settings.orderPhone = settings.phone;
+if (!Object.hasOwn(settings, "sellerPhone")) settings.sellerPhone = "";
+delete settings.phone;
 if (!settings.shipping || settings.shipping === "배송비와 출고 요일을 준비 중입니다. 주문 확인 후 안내드립니다.") settings.shipping = defaultSettings.shipping;
 if (!settings.refund || settings.refund === "파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.") settings.refund = defaultSettings.refund;
 localStorage.setItem("sansok-settings", JSON.stringify(settings));
@@ -185,18 +189,19 @@ function renderCart() {
 }
 
 function renderSettings() {
-  const contact = settings.phone || "연락처를 준비 중입니다.";
+  const contact = settings.orderPhone || "주문 문의 전화번호를 준비 중입니다.";
   document.querySelector("#contactInfo").innerHTML = `${contact}<br>전화 또는 문자로 문의해 주세요.`;
   document.querySelector("#shippingInfo").textContent = settings.shipping;
   document.querySelector("#refundInfo").textContent = settings.refund;
   const seller = [
+    settings.sellerPhone && `전화 ${settings.sellerPhone}`,
     settings.representative && `대표자 ${settings.representative}`,
     settings.businessNumber && `사업자등록번호 ${settings.businessNumber}`,
     settings.mailOrderNumber && `통신판매업 ${settings.mailOrderNumber}`
   ].filter(Boolean);
-  document.querySelector("#businessInfo").textContent = seller.length ? seller.join(" · ") : "대표자·사업자등록번호·통신판매업 신고번호를 준비 중입니다.";
-  if (settings.phone) {
-    const number = settings.phone.replace(/[^0-9+]/g, "");
+  document.querySelector("#businessInfo").textContent = seller.length ? seller.join(" · ") : "판매자 전화번호·대표자·사업자 정보를 준비 중입니다.";
+  if (settings.orderPhone) {
+    const number = settings.orderPhone.replace(/[^0-9+]/g, "");
     document.querySelector("#phoneLink").href = `tel:${number}`;
     document.querySelector("#messageLink").href = `sms:${number}`;
   }
