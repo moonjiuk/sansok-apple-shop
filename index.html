@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="announcement">2026년 수확 일정 · 홍로 9월 22일~26일 · 부사 11월 17일부터 <button aria-label="알림 닫기" onclick="this.parentElement.remove()">×</button></div>
+  <div class="announcement">2026년 출하 일정 · 썸머킹 7월 25일~8월 10일 · 홍로 9월 22일~26일 · 부사 11월 17일부터 <button aria-label="알림 닫기" onclick="this.parentElement.remove()">×</button></div>
 
   <header class="site-header">
     <a class="logo" href="#top" aria-label="산속농원 홈">
@@ -24,9 +24,12 @@
       <a href="#reviews">수확 안내</a>
       <a href="#contact">주문·배송 안내</a>
     </nav>
-    <button class="cart-button" id="cartOpen" aria-label="장바구니 열기">
-      장바구니 <span id="cartCount">0</span>
-    </button>
+    <div class="header-actions">
+      <button class="order-history-button" id="orderHistoryOpen">주문 조회</button>
+      <button class="cart-button" id="cartOpen" aria-label="장바구니 열기">
+        장바구니 <span id="cartCount">0</span>
+      </button>
+    </div>
   </header>
 
   <main id="top">
@@ -37,7 +40,7 @@
         <p>제천시 한수면 봉화재길의 맑은 공기 속에서 키웠어요.<br>산속농원의 홍로와 부사를 수확 철에 맞춰 보내드립니다.</p>
         <div class="hero-actions">
           <a class="primary-button" href="#shop">올해의 사과 만나기 <span>→</span></a>
-          <span class="delivery-note">🍎 홍로 <strong>9/22~26</strong> · 부사 <strong>11/17~</strong></span>
+          <span class="delivery-note">🍏 썸머킹 <strong>7/25~8/10</strong> · 홍로 <strong>9/22~26</strong> · 부사 <strong>11/17~</strong></span>
         </div>
       </div>
       <div class="hero-visual" aria-label="나뭇가지에 열린 탐스러운 빨간 사과">
@@ -52,7 +55,7 @@
 
     <section class="trust-strip" aria-label="상품 특징">
       <div><span>01</span><p><strong>제천 산지 재배</strong>한수면 봉화재길 597</p></div>
-      <div><span>02</span><p><strong>선물용·B품</strong>용도에 맞춘 다양한 구성</p></div>
+      <div><span>02</span><p><strong>선물용·가정용</strong>용도에 맞춘 다양한 구성</p></div>
       <div><span>03</span><p><strong>수확 철 출고</strong>품종별 일정에 맞춰 발송</p></div>
     </section>
 
@@ -64,14 +67,11 @@
         </div>
         <div class="filter-tabs" role="group" aria-label="상품 필터">
           <button class="active" data-filter="all">전체</button>
-          <button data-filter="썸머킹">썸머킹</button>
-          <button data-filter="홍로">홍로</button>
-          <button data-filter="부사">부사</button>
           <button data-filter="gift">선물용</button>
-          <button data-filter="bgrade">B품</button>
+          <button data-filter="bgrade">가정용</button>
         </div>
       </div>
-      <div class="product-grid" id="productGrid"></div>
+      <div class="product-groups" id="productGrid"></div>
     </section>
 
     <section class="story section" id="story">
@@ -83,7 +83,7 @@
       <div class="story-copy">
         <span class="eyebrow">OUR ORCHARD</span>
         <h2>산속의 바람과 햇살로<br>튼튼하게 키웁니다.</h2>
-        <p>충청북도 제천시 한수면 봉화재길 597. 산과 가까운 농원에서 홍로와 부사를 정성껏 재배합니다. 선물하기 좋은 고른 사과부터 맛은 그대로인 실속 B품까지 용도에 맞게 골라보세요.</p>
+        <p>충청북도 제천시 한수면 봉화재길 597. 산과 가까운 농원에서 홍로와 부사를 정성껏 재배합니다. 선물하기 좋은 고른 사과부터 맛은 그대로인 실속 가정용까지 용도에 맞게 골라보세요.</p>
         <div class="farmer">
           <div class="farmer-avatar">農</div>
           <div><strong>산속농원</strong><span>산속 놀이터 · 제천 사과 재배 농가</span></div>
@@ -97,7 +97,7 @@
         <div class="rating"><strong>2026</strong><span>제철에 수확해<br>순차 발송합니다</span></div>
       </div>
       <div class="review-grid">
-        <article><div class="stars">SUMMER KING</div><p>여름에 만나는 산뜻한 사과 썸머킹도 산속농원에서 재배하고 있습니다.</p><span>썸머킹 수확 · 일정 준비 중</span></article>
+        <article><div class="stars">SUMMER KING</div><p>여름에 만나는 산뜻한 사과 썸머킹도 산속농원에서 재배하고 있습니다.</p><span>썸머킹 출하 · 7월 25일~8월 10일</span></article>
         <article><div class="stars">HONGRO</div><p>새콤달콤하고 향긋한 홍로는 9월 22일부터 26일까지 수확합니다.</p><span>홍로 수확 · 9월 22일~26일</span></article>
         <article><div class="stars">FUJI</div><p>단단하고 달콤해 오래 두고 즐기기 좋은 부사는 11월 17일부터 수확합니다.</p><span>부사 수확 · 11월 17일부터</span></article>
         <article><div class="stars">ORDER NOTE</div><p>작황과 수확 상황에 따라 출고일이 달라질 수 있으며, 세부 일정은 주문 확인 후 안내드립니다.</p><span>산속농원 출고 안내</span></article>
@@ -114,17 +114,19 @@
       </div>
       <div class="info-grid">
         <article><span>01</span><h3>주문 문의</h3><p id="contactInfo">연락처를 준비 중입니다.<br>관리 페이지에서 입력해 주세요.</p></article>
-        <article><span>02</span><h3>배송 안내</h3><p id="shippingInfo">배송비와 출고 요일을 준비 중입니다.<br>주문 확인 후 안내드립니다.</p></article>
-        <article><span>03</span><h3>교환·환불</h3><p id="refundInfo">파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.</p></article>
-        <article><span>04</span><h3>판매자 정보</h3><p id="businessInfo">대표자·사업자등록번호·통신판매업 신고번호를 준비 중입니다.</p></article>
+        <article><span>02</span><h3>배송 안내</h3><p id="shippingInfo">일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.</p></article>
+        <article><span>03</span><h3>교환·환불</h3><p id="refundInfo">상품 이상·파손·오배송은 수령 후 24시간 이내 사진과 함께 연락해 주세요. 확인 후 교환 또는 환불해 드립니다. 신선식품 특성상 단순 변심, 주소 오기재, 연락 두절, 보관 부주의로 인한 변질은 교환·환불이 어렵습니다. 반품 전 반드시 판매자와 협의해 주세요.</p></article>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="logo"><span class="logo-fruit">●</span><span>산속농원</span></div>
-    <p>산속 놀이터 · 충청북도 제천시 한수면 봉화재길 597<br>홍로 9월 22일~26일 · 부사 11월 17일부터</p>
-    <p><a class="admin-link" href="admin.html">판매 관리</a><br>© 2026 Sansok Apple Farm.</p>
+    <div class="footer-info">
+      <p>산속 놀이터 · 충청북도 제천시 한수면 봉화재길 597<br>홍로 9월 22일~26일 · 부사 11월 17일부터</p>
+      <p><strong>판매자 정보</strong><span id="businessInfo">대표자·사업자등록번호·통신판매업 신고번호를 준비 중입니다.</span></p>
+    </div>
+    <p class="footer-copyright">© 2026 Sansok Apple Farm.</p>
   </footer>
 
   <div class="cart-overlay" id="cartOverlay"></div>
@@ -149,15 +151,68 @@
       <h2>받으실 분을 알려주세요</h2>
       <label>이름<input name="name" required placeholder="홍길동"></label>
       <label>연락처<input name="phone" required placeholder="010-0000-0000"></label>
-      <label>배송 주소<input name="address" required placeholder="도로명 주소"></label>
+      <label>배송 주소</label>
+      <div class="postcode-row">
+        <input name="postcode" id="postcode" required readonly placeholder="우편번호">
+        <button type="button" id="addressSearch">주소 검색</button>
+      </div>
+      <div class="address-search-layer" id="addressSearchLayer" hidden>
+        <div class="address-search-head"><strong>배송 주소 검색</strong><button type="button" id="addressSearchClose" aria-label="주소 검색 닫기">×</button></div>
+        <div id="addressSearchFrame"></div>
+      </div>
+      <input name="addressBase" id="addressBase" required readonly placeholder="주소 검색을 눌러 기본주소를 선택하세요">
+      <input name="addressDetail" id="addressDetail" required placeholder="상세주소 (동·호수, 건물명 / 없으면 ‘없음’)">
+      <p class="address-help" id="addressHelp"></p>
+      <div class="address-preview" id="addressPreview">배송 주소를 검색해 주세요.</div>
       <label>배송 메모<select name="memo"><option>문 앞에 놓아주세요</option><option>배송 전 연락주세요</option><option>경비실에 맡겨주세요</option></select></label>
+      <fieldset class="payment-methods">
+        <legend>결제수단</legend>
+        <label><input type="radio" name="paymentMethod" value="신용·체크카드" required checked><span>신용·체크카드</span></label>
+        <label><input type="radio" name="paymentMethod" value="토스페이"><span>토스페이</span></label>
+        <label><input type="radio" name="paymentMethod" value="계좌이체"><span>계좌이체</span></label>
+      </fieldset>
+      <label class="payment-agreement"><input type="checkbox" name="paymentAgreement" required> 주문 내용과 결제 조건을 확인했으며 결제에 동의합니다.</label>
       <div class="order-summary"><span>총 주문 금액</span><strong id="dialogTotal">0원</strong></div>
-      <button class="checkout-button" value="default">주문 접수하기</button>
-      <p class="demo-note">주문은 판매 관리 페이지에 접수됩니다. 실제 결제는 별도 안내가 필요합니다.</p>
+      <button class="checkout-button" value="default">결제하기</button>
+      <p class="demo-note">현재는 결제 프로세스 목업이며 실제 금액이 결제되지 않습니다.</p>
     </form>
   </dialog>
 
+  <dialog id="paymentMockDialog">
+    <div class="payment-mock">
+      <button class="dialog-close" id="paymentMockClose" type="button" aria-label="결제창 닫기">×</button>
+      <div class="toss-mock-brand"><span>toss</span> payments <em>MOCK</em></div>
+      <h2>결제 내용을 확인해 주세요</h2>
+      <div class="payment-mock-summary">
+        <p><span>주문번호</span><strong id="mockOrderId"></strong></p>
+        <p><span>결제수단</span><strong id="mockPaymentMethod"></strong></p>
+        <p><span>결제금액</span><strong id="mockPaymentAmount"></strong></p>
+      </div>
+      <div class="payment-process">
+        <span class="done">1 주문 요청</span><span class="active">2 구매자 인증</span><span>3 결제 승인</span>
+      </div>
+      <button class="mock-pay-button" id="mockPayComplete">테스트 결제 완료</button>
+      <button class="mock-back-button" id="paymentMockBack">주문서로 돌아가기</button>
+      <p>실제 연동 시 이 단계에서 토스페이먼츠 결제창과 카드사 인증이 진행됩니다.</p>
+    </div>
+  </dialog>
+
+  <dialog id="productDetailDialog">
+    <div class="detail-dialog-content" id="productDetailContent"></div>
+  </dialog>
+
+  <dialog id="orderHistoryDialog">
+    <div class="order-history-dialog">
+      <button class="dialog-close" id="orderHistoryClose" type="button" aria-label="주문 조회 닫기">×</button>
+      <span class="eyebrow">MY ORDERS</span>
+      <h2>이 기기의 주문 내역</h2>
+      <p class="order-history-note">현재 브라우저에서 주문한 내역만 표시됩니다. 기기를 바꾸거나 브라우저 데이터를 삭제하면 조회할 수 없습니다.</p>
+      <div id="myOrderList"></div>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast" role="status"></div>
+  <script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

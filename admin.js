@@ -2,28 +2,39 @@ const baseProducts = [
   { name:"5kg 22과",desc:"크고 고른 사과",price:80000,size:"5kg · 22과",category:"gift" },
   { name:"5kg 25과",desc:"고른 크기의 선물 구성",price:70000,size:"5kg · 25과",category:"gift" },
   { name:"10kg 44과 이내",desc:"넉넉한 프리미엄 구성",price:80000,size:"10kg · 44과 이내",category:"gift" },
-  { name:"10kg 44과 이내 B품",desc:"맛은 그대로인 실속 구성",price:60000,size:"10kg · 44과 이내",category:"bgrade" },
+  { name:"10kg 44과 이내 가정용",desc:"맛은 그대로인 실속 구성",price:60000,size:"10kg · 44과 이내",category:"bgrade" },
   { name:"10kg 50과 이내",desc:"부담 없이 선물하기 좋은 구성",price:60000,size:"10kg · 50과 이내",category:"gift" },
-  { name:"10kg 50과 이내 B품",desc:"모양만 달라도 맛은 그대로",price:50000,size:"10kg · 50과 이내",category:"bgrade" },
+  { name:"10kg 50과 이내 가정용",desc:"모양만 달라도 맛은 그대로",price:50000,size:"10kg · 50과 이내",category:"bgrade" },
   { name:"10kg 60과 이내",desc:"알찬 크기의 선물 구성",price:50000,size:"10kg · 60과 이내",category:"gift" },
-  { name:"10kg 60과 이내 B품",desc:"가정에서 즐기기 좋은 실속 구성",price:40000,size:"10kg · 60과 이내",category:"bgrade" }
+  { name:"10kg 60과 이내 가정용",desc:"가정에서 즐기기 좋은 실속 구성",price:40000,size:"10kg · 60과 이내",category:"bgrade" }
 ];
 const varietySeeds = [
-  { name:"썸머킹",code:100,harvest:"수확 일정 준비 중" },
+  { name:"썸머킹",code:100,harvest:"7월 25일~8월 10일" },
   { name:"홍로",code:200,harvest:"9월 22일~26일" },
   { name:"부사",code:300,harvest:"11월 17일부터" }
 ];
 const fallbackProducts = varietySeeds.flatMap(variety => baseProducts.map((product,index) => ({
   ...product,id:variety.code+index+1,name:`${variety.name} ${product.name}`,variety:variety.name,harvest:variety.harvest,
-  badge:product.category==="gift"?"선물용":"B품",status:"예약판매"
+  badge:product.category==="gift"?"선물용":"가정용",status:"예약판매"
 })));
 const fallbackSettings = {
-  phone: "", shipping: "배송비와 출고 요일을 준비 중입니다. 주문 확인 후 안내드립니다.",
-  refund: "파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.",
+  phone: "", shipping: "일반 주문은 주문 확인 후 평균 1주일 이내 배송됩니다. 예약 주문은 수확 일정과 작황에 따라 최대 6주 이내 배송될 수 있습니다.",
+  refund: "상품 이상·파손·오배송은 수령 후 24시간 이내 사진과 함께 연락해 주세요. 확인 후 교환 또는 환불해 드립니다. 신선식품 특성상 단순 변심, 주소 오기재, 연락 두절, 보관 부주의로 인한 변질은 교환·환불이 어렵습니다. 반품 전 반드시 판매자와 협의해 주세요.",
   representative: "", businessNumber: "", mailOrderNumber: ""
 };
-const catalogVersion = "3";
-if (localStorage.getItem("sansok-catalog-version") !== catalogVersion) {
+const catalogVersion = "4";
+const storedCatalogVersion = localStorage.getItem("sansok-catalog-version");
+if (storedCatalogVersion === "3") {
+  const storedProducts = JSON.parse(localStorage.getItem("sansok-products") || "[]");
+  const migratedProducts = storedProducts.map(product => ({
+    ...product,
+    name: product.name?.replace(/B품/g, "가정용"),
+    desc: product.desc?.replace(/B품/g, "가정용"),
+    badge: product.category === "bgrade" ? "가정용" : product.badge
+  }));
+  localStorage.setItem("sansok-products", JSON.stringify(migratedProducts.length ? migratedProducts : fallbackProducts));
+  localStorage.setItem("sansok-catalog-version", catalogVersion);
+} else if (storedCatalogVersion !== catalogVersion) {
   localStorage.setItem("sansok-products", JSON.stringify(fallbackProducts));
   localStorage.setItem("sansok-catalog-version", catalogVersion);
   localStorage.removeItem("sansok-cart");
@@ -31,6 +42,9 @@ if (localStorage.getItem("sansok-catalog-version") !== catalogVersion) {
 let products = JSON.parse(localStorage.getItem("sansok-products") || "null") || fallbackProducts;
 let orders = JSON.parse(localStorage.getItem("sansok-orders") || "[]");
 let settings = JSON.parse(localStorage.getItem("sansok-settings") || "null") || fallbackSettings;
+if (!settings.shipping || settings.shipping === "배송비와 출고 요일을 준비 중입니다. 주문 확인 후 안내드립니다.") settings.shipping = fallbackSettings.shipping;
+if (!settings.refund || settings.refund === "파손이나 상품 이상 시 수령 직후 사진과 함께 연락해 주세요.") settings.refund = fallbackSettings.refund;
+localStorage.setItem("sansok-settings", JSON.stringify(settings));
 const won = value => `${Number(value).toLocaleString("ko-KR")}원`;
 const dateText = value => new Date(value).toLocaleString("ko-KR", { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
 
@@ -51,7 +65,7 @@ function renderDashboard() {
 }
 function orderRow(order, selectable = true) {
   const itemText = order.items.map(item => `${item.name.startsWith(item.variety) ? item.name : `${item.variety} ${item.name}`} × ${item.quantity}`).join(", ");
-  return `<tr>${selectable?`<td class="check-cell"><input class="order-select" type="checkbox" value="${order.id}" aria-label="${order.id} 선택"></td>`:""}<td><strong>${order.id}</strong><small>${dateText(order.createdAt)}</small></td><td><strong>${order.customer.name}</strong><small>${order.customer.phone}</small></td><td><strong>${itemText}</strong><small>${order.customer.address}</small></td><td><strong>${won(order.total)}</strong></td><td><select class="status-select" data-order-status="${order.id}">${["신규주문","입금확인","배송준비","배송완료","취소"].map(status => `<option ${status===order.status?"selected":""}>${status}</option>`).join("")}</select></td><td class="row-actions"><button data-delete-order="${order.id}">삭제</button></td></tr>`;
+  return `<tr>${selectable?`<td class="check-cell"><input class="order-select" type="checkbox" value="${order.id}" aria-label="${order.id} 선택"></td>`:""}<td><strong>${order.id}</strong><small>${dateText(order.createdAt)}</small></td><td><strong>${order.customer.name}</strong><small>${order.customer.phone}</small></td><td><strong>${itemText}</strong><small>${order.customer.address}</small></td><td><strong>${won(order.total)}</strong><small>${order.payment ? `${order.payment.method} · ${order.payment.status}` : "결제 정보 없음"}</small></td><td><select class="status-select" data-order-status="${order.id}">${["신규주문","입금확인","배송준비","배송완료","취소"].map(status => `<option ${status===order.status?"selected":""}>${status}</option>`).join("")}</select></td><td class="row-actions"><button data-delete-order="${order.id}">삭제</button></td></tr>`;
 }
 function renderOrders() {
   const query = document.querySelector("#orderSearch").value.trim().toLowerCase();
@@ -66,7 +80,7 @@ function renderOrders() {
 }
 function renderProducts() {
   document.querySelector("#productRows").innerHTML = products.map(product => `<tr>
-    <td><strong>${product.name}</strong><small>${product.desc}</small></td><td>${product.variety}</td><td>${product.category==="gift"?"선물용":"B품"}</td>
+    <td><strong>${product.name}</strong><small>${product.desc}</small></td><td>${product.variety}</td><td>${product.category==="gift"?"선물용":"가정용"}</td>
     <td><strong>${won(product.price)}</strong></td><td><select class="status-select" data-product-status="${product.id}">${["판매중","예약판매","품절","판매종료"].map(status => `<option ${status===product.status?"selected":""}>${status}</option>`).join("")}</select></td>
     <td class="row-actions"><button data-edit-product="${product.id}">수정</button><button data-delete-product="${product.id}">삭제</button></td></tr>`).join("");
 }
@@ -125,6 +139,11 @@ document.addEventListener("change", event => {
 });
 document.querySelector("#addProduct").addEventListener("click", () => openProduct());
 document.querySelector("#productDialogClose").addEventListener("click", () => document.querySelector("#productDialog").close());
+document.querySelectorAll("dialog").forEach(dialog => {
+  dialog.addEventListener("click", event => {
+    if (event.target === dialog) dialog.close();
+  });
+});
 document.querySelector("#productForm").addEventListener("submit", event => {
   event.preventDefault();
   if (!event.currentTarget.reportValidity()) return;
@@ -132,8 +151,8 @@ document.querySelector("#productForm").addEventListener("submit", event => {
   const product = {
     id: data.id ? Number(data.id) : Math.max(0,...products.map(item => item.id))+1,
     name:data.name, desc:data.desc, size:data.size, price:Number(data.price), category:data.category,
-    badge:data.category==="gift"?"선물용":"B품", variety:data.variety,
-    harvest:data.variety==="홍로"?"9월 22일~26일":data.variety==="부사"?"11월 17일부터":"수확 일정 준비 중", status:data.status
+    badge:data.category==="gift"?"선물용":"가정용", variety:data.variety,
+    harvest:data.variety==="홍로"?"9월 22일~26일":data.variety==="부사"?"11월 17일~12월 31일":"7월 25일~8월 10일", status:data.status
   };
   const index = products.findIndex(item => item.id === product.id);
   if (index >= 0) products[index] = product; else products.push(product);
