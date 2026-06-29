@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>산속농원 판매 관리</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="index.html"><span>●</span><strong>산속농원</strong><small>판매 관리</small></a>
+    <nav>
+      <button class="active" data-page="dashboard">홈</button>
+      <button data-page="products">상품 관리</button>
+      <button data-page="orders">주문 관리 <i id="newOrderCount">0</i></button>
+      <button data-page="settings">판매 정보</button>
+    </nav>
+    <a class="store-link" href="index.html">← 고객용 사이트 보기</a>
+  </aside>
+
+  <main class="admin-main">
+    <header>
+      <div><p id="pageEyebrow">OVERVIEW</p><h1 id="pageTitle">판매 현황</h1></div>
+      <span class="local-badge">이 브라우저에 자동 저장됨</span>
+    </header>
+
+    <section class="admin-page active" id="dashboardPage">
+      <div class="stat-grid">
+        <article><span>전체 주문</span><strong id="statOrders">0</strong><small>접수된 주문</small></article>
+        <article><span>신규 주문</span><strong id="statNew">0</strong><small>확인이 필요해요</small></article>
+        <article><span>판매 상품</span><strong id="statProducts">0</strong><small>판매중·예약판매</small></article>
+        <article><span>총 주문액</span><strong id="statRevenue">0원</strong><small>접수 기준</small></article>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><div><p>RECENT ORDERS</p><h2>최근 주문</h2></div><button data-go="orders">전체 보기</button></div>
+        <div id="recentOrders"></div>
+      </div>
+      <div class="guide"><strong>처음 사용하시나요?</strong><p>① 판매 정보에서 연락처와 배송 안내 입력 → ② 상품 상태를 판매중으로 변경 → ③ 접수된 주문 확인</p></div>
+    </section>
+
+    <section class="admin-page" id="productsPage">
+      <div class="panel">
+        <div class="panel-title"><div><p>CATALOG</p><h2>상품 목록</h2></div><button class="primary" id="addProduct">+ 상품 추가</button></div>
+        <div class="table-wrap"><table><thead><tr><th>상품</th><th>품종</th><th>구분</th><th>가격</th><th>판매 상태</th><th></th></tr></thead><tbody id="productRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="admin-page" id="ordersPage">
+      <div class="panel">
+        <div class="panel-title"><div><p>ORDERS</p><h2>주문 목록</h2></div><button id="sampleOrder">예시 주문 만들기</button></div>
+        <div class="order-tools">
+          <div class="order-filters">
+            <input id="orderSearch" type="search" placeholder="주문번호, 주문자, 연락처 검색" aria-label="주문 검색">
+            <select id="orderStatusFilter" aria-label="주문 상태 필터"><option value="all">모든 상태</option><option>신규주문</option><option>입금확인</option><option>배송준비</option><option>배송완료</option><option>취소</option></select>
+          </div>
+          <div class="bulk-actions">
+            <strong><span id="selectedOrderCount">0</span>건 선택</strong>
+            <select id="bulkOrderStatus" aria-label="일괄 변경할 상태"><option value="">변경할 상태</option><option>신규주문</option><option>입금확인</option><option>배송준비</option><option>배송완료</option><option>취소</option></select>
+            <button id="applyBulkStatus" class="primary">선택 주문 변경</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th class="check-cell"><input id="selectAllOrders" type="checkbox" aria-label="현재 목록 전체 선택"></th><th>주문번호·일시</th><th>주문자</th><th>상품</th><th>금액</th><th>상태</th><th></th></tr></thead><tbody id="orderRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="admin-page" id="settingsPage">
+      <form class="panel settings-form" id="settingsForm">
+        <div class="panel-title"><div><p>STORE SETTINGS</p><h2>판매 정보</h2></div><button class="primary" type="submit">저장하기</button></div>
+        <div class="form-grid">
+          <label>주문 연락처<input name="phone" placeholder="예: 010-0000-0000"></label>
+          <label>대표자명<input name="representative" placeholder="나중에 입력"></label>
+          <label>사업자등록번호<input name="businessNumber" placeholder="나중에 입력"></label>
+          <label>통신판매업 신고번호<input name="mailOrderNumber" placeholder="나중에 입력"></label>
+          <label class="wide">배송 안내<textarea name="shipping" rows="4"></textarea></label>
+          <label class="wide">교환·환불 안내<textarea name="refund" rows="4"></textarea></label>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <dialog id="productDialog">
+    <form method="dialog" id="productForm">
+      <button class="dialog-close" id="productDialogClose" type="button" aria-label="상품 창 닫기">×</button>
+      <p>PRODUCT EDITOR</p><h2>상품 정보</h2>
+      <input type="hidden" name="id">
+      <label>상품명<input name="name" required></label>
+      <label>설명<input name="desc" required></label>
+      <div class="form-row">
+        <label>규격<input name="size" required></label>
+        <label>가격<input name="price" type="number" min="0" required></label>
+      </div>
+      <div class="form-row">
+        <label>구분<select name="category"><option value="gift">선물용</option><option value="bgrade">B품</option></select></label>
+        <label>판매 상태<select name="status"><option>판매중</option><option>예약판매</option><option>품절</option><option>판매종료</option></select></label>
+      </div>
+      <label>품종<select name="variety"><option>썸머킹</option><option>홍로</option><option>부사</option></select></label>
+      <button class="save-product" value="default">상품 저장</button>
+    </form>
+  </dialog>
+  <div class="admin-toast" id="adminToast"></div>
+  <script src="admin.js"></script>
+</body>
+</html>
