@@ -269,7 +269,7 @@ async function openProductDetail(id) {
       <div class="detail-copy">
         <span class="eyebrow">${product.variety} · SANSOK APPLE FARM</span>
         <h2>${product.name}</h2>
-        <p class="detail-lead">${product.desc}. 제천 산속농원에서 제철에 수확해 보내드립니다.</p>
+        <p class="detail-lead">${product.desc}. 제천 산속 놀이터에서 제철에 수확해 보내드립니다.</p>
         <strong class="detail-price">${won(product.price)}</strong>
         <dl class="detail-specs">
           <div><dt>품종</dt><dd>${product.variety}</dd></div>
