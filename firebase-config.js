@@ -9,8 +9,34 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
+const firebaseAuth = typeof firebase.auth === "function" ? firebase.auth() : null;
+const ADMIN_EMAILS = ["moonjiugi917@gmail.com"];
+
+function isAdminUser(user) {
+  return Boolean(user && ADMIN_EMAILS.includes((user.email || "").toLowerCase()));
+}
 
 window.sansokFirebase = {
+  auth: {
+    onChange(callback) {
+      return firebaseAuth.onAuthStateChanged(callback);
+    },
+    isAdmin: isAdminUser,
+    async signInAdmin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const result = await firebaseAuth.signInWithPopup(provider);
+      if (!isAdminUser(result.user)) {
+        const email = result.user?.email || "선택한 계정";
+        await firebaseAuth.signOut();
+        throw new Error(`${email} 계정은 판매 관리자로 등록되어 있지 않습니다.`);
+      }
+      return result.user;
+    },
+    signOut() {
+      return firebaseAuth.signOut();
+    }
+  },
   async load() {
     const [catalog, settings, orders] = await Promise.all([
       firestore.doc("store/catalog").get(),
