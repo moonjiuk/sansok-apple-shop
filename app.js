@@ -139,7 +139,10 @@ function renderProducts(filter = activeFilter) {
     const cards = itemsWithStatus.map(({ product, effectiveStatus }) => {
       const disabled = effectiveStatus === "품절" || effectiveStatus === "판매종료";
       return `<article class="product-card">
-        <button class="product-image" type="button" data-detail="${product.id}" aria-label="${product.name} 상세보기"><span class="badge">${product.badge}</span><span class="sale-status status-${effectiveStatus}">${effectiveStatus}</span></button>
+        <button class="product-image ${Number(product.id) === 108 ? "has-photo" : ""}" type="button" data-detail="${product.id}" aria-label="${product.name} 상세보기">
+          ${Number(product.id) === 108 ? `<img src="assets/summerking-test.jpeg?v=5" alt="나무에 열린 썸머킹 사과">` : ""}
+          <span class="badge">${product.badge}</span><span class="sale-status status-${effectiveStatus}">${effectiveStatus}</span>
+        </button>
         <div class="product-info">
           <div class="product-title-row">
             <div><h3><button class="product-detail-link" type="button" data-detail="${product.id}">${product.name}</button></h3><p>${product.desc} · ${product.size}</p></div>
@@ -603,7 +606,16 @@ document.addEventListener("keydown", event => {
   if (event.key === "Escape") setCartOpen(false);
 });
 window.addEventListener("storage", event => {
-  if (event.key === "sansok-products" || event.key === "sansok-settings") location.reload();
+  if (event.key === "sansok-products" && event.newValue) {
+    products = JSON.parse(event.newValue);
+    renderProducts();
+    renderCart();
+  }
+  if (event.key === "sansok-settings" && event.newValue) {
+    settings = { ...defaultSettings, ...JSON.parse(event.newValue) };
+    delete settings.updatedAt;
+    renderSettings();
+  }
 });
 
 async function initializeStore() {
