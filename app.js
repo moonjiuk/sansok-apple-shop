@@ -138,9 +138,10 @@ function renderProducts(filter = activeFilter) {
         : "판매 종료";
     const cards = itemsWithStatus.map(({ product, effectiveStatus }) => {
       const disabled = effectiveStatus === "품절" || effectiveStatus === "판매종료";
+      const isSummerking60Home = product.name.trim() === "썸머킹 10kg 60과 가정용";
       return `<article class="product-card">
-        <button class="product-image ${Number(product.id) === 108 ? "has-photo" : ""}" type="button" data-detail="${product.id}" aria-label="${product.name} 상세보기">
-          ${Number(product.id) === 108 ? `<img src="assets/summerking-test.jpeg?v=5" alt="나무에 열린 썸머킹 사과">` : ""}
+        <button class="product-image ${isSummerking60Home ? "has-photo" : ""}" type="button" data-detail="${product.id}" aria-label="${product.name} 상세보기">
+          ${isSummerking60Home ? `<img src="assets/summerking-test.jpeg?v=6" alt="나무에 열린 썸머킹 사과">` : ""}
           <span class="badge">${product.badge}</span><span class="sale-status status-${effectiveStatus}">${effectiveStatus}</span>
         </button>
         <div class="product-info">
