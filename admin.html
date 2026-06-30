@@ -8,14 +8,13 @@
 </head>
 <body>
   <div class="admin-lock" id="adminLock">
-    <form class="admin-lock-card" id="adminLoginForm">
+    <div class="admin-lock-card">
       <span>SELLER ACCESS</span>
       <h1>판매 관리 로그인</h1>
-      <p>판매자 암호를 입력해 주세요.</p>
-      <label>암호<input id="adminPassword" type="password" autocomplete="current-password" autofocus required></label>
-      <button type="submit">판매 관리 열기</button>
+      <p>등록된 판매자 Google 계정으로 로그인해 주세요.</p>
+      <button type="button" id="adminGoogleLogin">Google 계정으로 로그인</button>
       <small id="adminLoginError" role="alert"></small>
-    </form>
+    </div>
   </div>
   <aside class="admin-sidebar">
     <a class="admin-brand" href="index.html"><span class="admin-logo-fruit" aria-hidden="true">●</span><strong>산속 놀이터</strong><small>판매 관리</small></a>
@@ -150,6 +149,7 @@
   </dialog>
   <div class="admin-toast" id="adminToast"></div>
   <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="admin.js"></script>
