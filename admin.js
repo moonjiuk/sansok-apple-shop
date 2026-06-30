@@ -371,21 +371,50 @@ async function initializeAdmin() {
 }
 
 function unlockAdmin() {
-  sessionStorage.setItem("sansok-admin-unlocked", "1");
   document.body.classList.remove("admin-locked");
   document.querySelector("#adminLock").hidden = true;
   initializeAdmin();
 }
 
 document.body.classList.add("admin-locked");
-document.querySelector("#adminLoginForm").addEventListener("submit", event => {
-  event.preventDefault();
-  if (document.querySelector("#adminPassword").value !== "admin") {
-    document.querySelector("#adminLoginError").textContent = "암호가 올바르지 않습니다.";
-    document.querySelector("#adminPassword").select();
+const adminLoginButton = document.querySelector("#adminGoogleLogin");
+const adminLoginError = document.querySelector("#adminLoginError");
+const isFilePreview = location.protocol === "file:";
+
+if (isFilePreview) {
+  document.querySelector("#adminLock p").textContent = "Google 로그인은 로컬 서버 또는 배포된 사이트에서 사용할 수 있습니다.";
+  adminLoginButton.textContent = "로컬 서버에서 관리자 페이지 열기";
+  adminLoginError.textContent = "파일을 직접 연 상태에서는 Google 로그인을 사용할 수 없습니다.";
+}
+
+adminLoginButton.addEventListener("click", async () => {
+  if (isFilePreview) {
+    location.href = "http://localhost:4173/outputs/haetsal-apple-shop/admin.html";
     return;
   }
-  unlockAdmin();
+  adminLoginButton.disabled = true;
+  adminLoginButton.textContent = "Google 로그인 확인 중…";
+  adminLoginError.textContent = "";
+  try {
+    await window.sansokFirebase.auth.signInAdmin();
+  } catch (error) {
+    console.error(error);
+    adminLoginError.textContent = error.code === "auth/popup-blocked"
+      ? "팝업이 차단되었습니다. 브라우저에서 팝업을 허용해 주세요."
+      : error.code === "auth/popup-closed-by-user"
+        ? "로그인 창이 닫혔습니다. 다시 시도해 주세요."
+        : (error.message || "Google 로그인에 실패했습니다.");
+  } finally {
+    adminLoginButton.disabled = false;
+    adminLoginButton.textContent = "Google 계정으로 로그인";
+  }
 });
 
-if (sessionStorage.getItem("sansok-admin-unlocked") === "1") unlockAdmin();
+window.sansokFirebase.auth.onChange(user => {
+  if (window.sansokFirebase.auth.isAdmin(user)) {
+    unlockAdmin();
+    return;
+  }
+  document.body.classList.add("admin-locked");
+  document.querySelector("#adminLock").hidden = false;
+});
