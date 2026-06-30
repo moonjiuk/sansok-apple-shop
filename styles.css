@@ -299,8 +299,21 @@ dialog::backdrop { background: rgba(12,25,19,.65); }
 .my-order-meta { font-size: 11px; color: var(--muted); }
 .my-order-meta strong { color: var(--ink); font-size: 15px; }
 .my-order-payment { margin: -5px 0 12px; color: var(--green); font-size: 10px; font-weight: 700; }
+.my-order-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--line); }
+.return-request-button { border: 1px solid var(--ink); background: transparent; padding: 9px 12px; color: var(--ink); cursor: pointer; font-size: 11px; font-weight: 800; }
+.return-status { color: var(--red); font-size: 11px; font-weight: 800; }
+.return-status small { display: block; margin-top: 4px; color: var(--muted); font-weight: 400; line-height: 1.5; }
 .my-orders-empty { padding: 55px 20px; text-align: center; color: var(--muted); }
 .my-orders-empty span { font-size: 42px; }
+.return-request-form { position: relative; padding: 38px; }
+.return-request-form h2 { margin: 8px 0 7px; font-size: 28px; }
+.return-order-number { margin: 0 0 24px; color: var(--muted); font-size: 11px; }
+.return-request-form label { display: block; margin-top: 16px; color: var(--ink); font-size: 12px; font-weight: 700; }
+.return-request-form select,.return-request-form textarea { width: 100%; margin-top: 7px; padding: 12px; border: 1px solid var(--line); background: white; font: inherit; }
+.return-policy-note { margin-top: 17px; padding: 13px; background: var(--cream); color: var(--muted); font-size: 10px; line-height: 1.6; }
+.return-request-form .return-agreement { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.return-agreement input { margin: 0; }
+.return-submit-button { width: 100%; margin-top: 20px; border: 0; padding: 15px; background: var(--red); color: white; cursor: pointer; font-weight: 800; }
 .payment-mock { position: relative; padding: 38px; }
 .toss-mock-brand { color: #4e5968; font-size: 17px; font-weight: 700; }
 .toss-mock-brand span { color: #3182f6; font-size: 22px; font-weight: 900; }
@@ -379,4 +392,5 @@ dialog::backdrop { background: rgba(12,25,19,.65); }
   .detail-product-guide-copy { grid-template-columns:1fr; }
   .detail-product-guide-copy article+article { border-left:0; border-top:1px solid var(--line); }
   .order-history-dialog { padding: 35px 18px 22px; }
+  .return-request-form { padding: 35px 18px 22px; }
 }

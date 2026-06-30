@@ -18,7 +18,7 @@
     </form>
   </div>
   <aside class="admin-sidebar">
-    <a class="admin-brand" href="index.html"><span>●</span><strong>산속 놀이터</strong><small>판매 관리</small></a>
+    <a class="admin-brand" href="index.html"><span class="admin-logo-fruit" aria-hidden="true">●</span><strong>산속 놀이터</strong><small>판매 관리</small></a>
     <nav>
       <button class="active" data-page="orders">주문 관리 <i id="newOrderCount">0</i></button>
       <button data-page="products">상품 관리</button>
@@ -64,7 +64,7 @@
         <div class="order-tools">
           <div class="order-filters">
             <input id="orderSearch" type="search" placeholder="주문번호, 주문자, 연락처 검색" aria-label="주문 검색">
-            <select id="orderStatusFilter" aria-label="주문 상태 필터"><option value="all">모든 상태</option><option>신규주문</option><option>입금확인</option><option>배송준비</option><option>배송완료</option><option>취소</option></select>
+            <select id="orderStatusFilter" aria-label="주문 상태 필터"><option value="all">모든 상태</option><option value="return-request">교환·환불 요청</option><option>신규주문</option><option>입금확인</option><option>배송준비</option><option>배송완료</option><option>취소</option></select>
           </div>
           <div class="bulk-actions">
             <strong><span id="selectedOrderCount">0</span>건 선택</strong>
@@ -111,6 +111,18 @@
       </form>
     </section>
   </main>
+
+  <dialog id="returnManageDialog">
+    <form id="returnManageForm">
+      <button class="dialog-close" id="returnManageClose" type="button" aria-label="교환 환불 처리 창 닫기">×</button>
+      <p>EXCHANGE & REFUND</p><h2>교환·환불 요청 처리</h2>
+      <input type="hidden" name="orderId">
+      <div class="return-request-summary" id="returnRequestSummary"></div>
+      <label>처리 상태<select name="status" required><option>신청접수</option><option>처리중</option><option>승인</option><option>완료</option><option>반려</option></select></label>
+      <label>판매자 답변<textarea name="sellerMemo" rows="4" placeholder="고객에게 안내할 처리 내용이나 반려 사유를 입력해 주세요."></textarea></label>
+      <button class="save-product" type="submit">처리 내용 저장</button>
+    </form>
+  </dialog>
 
   <dialog id="productDialog">
     <form method="dialog" id="productForm">

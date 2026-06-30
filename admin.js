@@ -52,6 +52,7 @@ if (!settings.refund || settings.refund === "파손이나 상품 이상 시 수�
 localStorage.setItem("sansok-settings", JSON.stringify(settings));
 const won = value => `${Number(value).toLocaleString("ko-KR")}원`;
 const dateText = value => new Date(value).toLocaleString("ko-KR", { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
+const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
 
 function reportFirebaseError(error) {
   console.error(error);
@@ -81,14 +82,17 @@ function renderDashboard() {
 }
 function orderRow(order, selectable = true) {
   const itemText = order.items.map(item => `${item.name.startsWith(item.variety) ? item.name : `${item.variety} ${item.name}`} × ${item.quantity}`).join(", ");
-  return `<tr>${selectable?`<td class="check-cell"><input class="order-select" type="checkbox" value="${order.id}" aria-label="${order.id} 선택"></td>`:""}<td><strong>${order.id}</strong><small>${dateText(order.createdAt)}</small></td><td><strong>${order.customer.name}</strong><small>${order.customer.phone}</small></td><td><strong>${itemText}</strong><small>${order.customer.address}</small></td><td><strong>${won(order.total)}</strong><small>${order.payment ? `${order.payment.method} · ${order.payment.status}` : "결제 정보 없음"}</small></td><td><select class="status-select" data-order-status="${order.id}">${["신규주문","입금확인","배송준비","배송완료","취소"].map(status => `<option ${status===order.status?"selected":""}>${status}</option>`).join("")}</select></td><td class="row-actions"><button data-delete-order="${order.id}">삭제</button></td></tr>`;
+  const requestTag = order.returnRequest ? `<span class="return-request-tag">${order.returnRequest.type} · ${order.returnRequest.status}</span>` : "";
+  const requestButton = order.returnRequest ? `<button data-manage-return="${order.id}">요청 처리</button>` : "";
+  return `<tr>${selectable?`<td class="check-cell"><input class="order-select" type="checkbox" value="${order.id}" aria-label="${order.id} 선택"></td>`:""}<td><strong>${order.id}</strong><small>${dateText(order.createdAt)}</small>${requestTag}</td><td><strong>${order.customer.name}</strong><small>${order.customer.phone}</small></td><td><strong>${itemText}</strong><small>${order.customer.address}</small></td><td><strong>${won(order.total)}</strong><small>${order.payment ? `${order.payment.method} · ${order.payment.status}` : "결제 정보 없음"}</small></td><td><select class="status-select" data-order-status="${order.id}">${["신규주문","입금확인","배송준비","배송완료","취소"].map(status => `<option ${status===order.status?"selected":""}>${status}</option>`).join("")}</select></td><td class="row-actions">${requestButton}<button data-delete-order="${order.id}">삭제</button></td></tr>`;
 }
 function renderOrders() {
   const query = document.querySelector("#orderSearch").value.trim().toLowerCase();
   const status = document.querySelector("#orderStatusFilter").value;
   const filtered = orders.filter(order => {
     const text = `${order.id} ${order.customer.name} ${order.customer.phone} ${order.customer.address}`.toLowerCase();
-    return (!query || text.includes(query)) && (status === "all" || order.status === status);
+    const matchesStatus = status === "all" || (status === "return-request" ? Boolean(order.returnRequest) : order.status === status);
+    return (!query || text.includes(query)) && matchesStatus;
   });
   document.querySelector("#orderRows").innerHTML = filtered.length ? filtered.map(order => orderRow(order, true)).join("") : `<tr><td colspan="7" class="table-empty">조건에 맞는 주문이 없습니다.</td></tr>`;
   document.querySelector("#selectAllOrders").checked = false;
@@ -186,6 +190,21 @@ function updateSelectedCount() {
 function updateSelectedProductCount() {
   document.querySelector("#selectedProductCount").textContent = document.querySelectorAll(".product-select:checked").length;
 }
+function openReturnManage(order) {
+  const request = order.returnRequest;
+  if (!request) return;
+  const form = document.querySelector("#returnManageForm");
+  form.elements.orderId.value = order.id;
+  form.elements.status.value = request.status;
+  form.elements.sellerMemo.value = request.sellerMemo || "";
+  document.querySelector("#returnRequestSummary").innerHTML = `
+    <p><strong>${escapeHtml(request.type)} 요청 · ${escapeHtml(request.status)}</strong></p>
+    <p>주문번호 ${escapeHtml(order.id)} · ${escapeHtml(order.customer.name)} · ${escapeHtml(order.customer.phone)}</p>
+    <p>사유: ${escapeHtml(request.reason)}</p>
+    <p>상세 내용: ${escapeHtml(request.detail)}</p>
+    <p>신청일: ${dateText(request.requestedAt)}</p>`;
+  document.querySelector("#returnManageDialog").showModal();
+}
 
 document.addEventListener("click", event => {
   const page = event.target.closest("[data-page]")?.dataset.page;
@@ -196,6 +215,8 @@ document.addEventListener("click", event => {
   if (deleteId && confirm("이 상품을 삭제할까요?")) { products = products.filter(product => product.id !== deleteId); saveProducts(); toast("상품을 삭제했습니다."); }
   const deleteOrder = event.target.dataset.deleteOrder;
   if (deleteOrder && confirm("이 주문 기록을 삭제할까요?")) { orders = orders.filter(order => order.id !== deleteOrder); saveOrders(); toast("주문을 삭제했습니다."); }
+  const manageReturn = event.target.dataset.manageReturn;
+  if (manageReturn) openReturnManage(orders.find(order => order.id === manageReturn));
 });
 document.addEventListener("change", event => {
   if (event.target.dataset.productStatus) {
@@ -211,6 +232,7 @@ document.addEventListener("change", event => {
 });
 document.querySelector("#addProduct").addEventListener("click", () => openProduct());
 document.querySelector("#productDialogClose").addEventListener("click", () => document.querySelector("#productDialog").close());
+document.querySelector("#returnManageClose").addEventListener("click", () => document.querySelector("#returnManageDialog").close());
 document.querySelectorAll("dialog").forEach(dialog => {
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
@@ -256,6 +278,22 @@ document.querySelector("#settingsForm").addEventListener("submit", event => {
   localStorage.setItem("sansok-settings", JSON.stringify(settings));
   window.sansokFirebase.saveSettings(settings).catch(reportFirebaseError);
   toast("판매 정보를 저장했습니다.");
+});
+document.querySelector("#returnManageForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+  const order = orders.find(item => item.id === data.orderId);
+  if (!order?.returnRequest) {
+    toast("처리할 요청을 찾지 못했습니다.");
+    return;
+  }
+  order.returnRequest.status = data.status;
+  order.returnRequest.sellerMemo = data.sellerMemo.trim();
+  order.returnRequest.updatedAt = new Date().toISOString();
+  if (data.status === "완료") order.status = order.returnRequest.type === "환불" ? "취소" : "배송완료";
+  saveOrders();
+  document.querySelector("#returnManageDialog").close();
+  toast(`${order.returnRequest.type} 요청 처리 내용을 저장했습니다.`);
 });
 document.querySelector("#sampleOrder").addEventListener("click", () => {
   orders.unshift({id:`SO-${Date.now().toString().slice(-8)}`,createdAt:new Date().toISOString(),customer:{name:"홍길동",phone:"010-0000-0000",address:"충북 제천시 예시 주소",memo:"배송 전 연락주세요"},items:[{name:"5kg 22과",variety:"홍로",quantity:1,price:80000}],total:80000,status:"신규주문"});
