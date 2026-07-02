@@ -145,6 +145,7 @@ function renderProducts(filter = activeFilter) {
           <span class="badge">${product.badge}</span><span class="sale-status status-${effectiveStatus}">${effectiveStatus}</span>
         </button>
         <div class="product-info">
+          <div class="mobile-product-tags" aria-hidden="true"><span>${product.badge}</span><i>${effectiveStatus}</i></div>
           <div class="product-title-row">
             <div><h3><button class="product-detail-link" type="button" data-detail="${product.id}">${product.name}</button></h3><p>${product.desc} · ${product.size}</p></div>
             <div class="product-price">${won(product.price)}</div>
@@ -175,12 +176,24 @@ function showToast(message) {
   showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200);
 }
 
-function addToCart(id) {
+function addToCart(id, trigger) {
   const product = products.find(item => item.id === id);
   const key = String(id);
   cart[key] = (cart[key] || 0) + 1;
   saveCart();
   showToast(`${product.variety} 상품을 장바구니에 담았어요.`);
+  if (trigger?.classList.contains("detail-order-button")) {
+    clearTimeout(addToCart.feedbackTimer);
+    trigger.classList.add("added");
+    trigger.textContent = `장바구니에 담겼어요 · 총 ${cart[key]}개`;
+    const feedback = document.querySelector("#detailCartFeedback");
+    if (feedback) feedback.textContent = `현재 이 상품은 장바구니에 ${cart[key]}개 담겨 있습니다.`;
+    addToCart.feedbackTimer = setTimeout(() => {
+      if (!trigger.isConnected) return;
+      trigger.classList.remove("added");
+      trigger.textContent = "한 개 더 담기";
+    }, 1800);
+  }
 }
 
 function cartDetails() {
@@ -263,6 +276,7 @@ async function openProductDetail(id) {
   const contact = settings.orderPhone
     ? `<a href="tel:${settings.orderPhone.replace(/[^0-9+]/g, "")}">${settings.orderPhone}</a>`
     : "주문 문의 전화번호를 준비 중입니다.";
+  const cartQuantity = cart[String(product.id)] || 0;
   document.querySelector("#productDetailContent").innerHTML = `
     <button class="dialog-close" id="productDetailClose" type="button" aria-label="상품 상세 닫기">×</button>
     <section class="detail-layout">
@@ -284,8 +298,8 @@ async function openProductDetail(id) {
           <div><dt>출하 기간</dt><dd>${product.harvest}</dd></div>
           <div><dt>판매 상태</dt><dd>${status}</dd></div>
         </dl>
-        <button class="detail-order-button" data-add="${product.id}" ${disabled ? "disabled" : ""}>${disabled ? status : "장바구니 담기"}</button>
-        <p class="detail-quantity-note">장바구니에서 주문 수량을 변경할 수 있습니다.</p>
+        <button class="detail-order-button" data-add="${product.id}" ${disabled ? "disabled" : ""}>${disabled ? status : cartQuantity ? "한 개 더 담기" : "장바구니 담기"}</button>
+        <p class="detail-quantity-note" id="detailCartFeedback" aria-live="polite">${cartQuantity ? `현재 이 상품은 장바구니에 ${cartQuantity}개 담겨 있습니다.` : "장바구니에서 주문 수량을 변경할 수 있습니다."}</p>
       </div>
     </section>
     <section class="detail-product-guide">
@@ -305,6 +319,7 @@ async function openProductDetail(id) {
       <article><span>EXCHANGE & REFUND</span><h2>교환·환불 기준</h2><p>${settings.refund}</p><p>문제가 있는 상품과 택배 상자가 함께 보이도록 사진을 남겨 주세요.</p></article>
       <article><span>CONTACT</span><h2>주문 문의</h2><p>${contact}</p><p>상품 구성이나 출하 일정이 궁금하면 주문 전에 문의해 주세요.</p></article>
     </section>`;
+  document.body.classList.add("detail-modal-open");
   document.querySelector("#productDetailDialog").showModal();
   try {
     const imageData = await window.sansokFirebase.loadProductImage(product.id);
@@ -380,7 +395,7 @@ document.addEventListener("click", event => {
   const change = event.target.closest("[data-change]");
   const remove = event.target.closest("[data-remove]");
   const returnOrder = event.target.closest("[data-return-order]");
-  if (add) addToCart(Number(add.dataset.add));
+  if (add) addToCart(Number(add.dataset.add), add);
   if (detail) openProductDetail(Number(detail.dataset.detail));
   if (event.target.closest("#productDetailClose")) document.querySelector("#productDetailDialog").close();
   if (change) {
@@ -403,6 +418,10 @@ document.addEventListener("click", event => {
     document.querySelector("#orderHistoryDialog").close();
     document.querySelector("#returnRequestDialog").showModal();
   }
+});
+
+document.querySelector("#productDetailDialog").addEventListener("close", () => {
+  document.body.classList.remove("detail-modal-open");
 });
 
 document.querySelectorAll(".filter-tabs button").forEach(button => button.addEventListener("click", () => {
