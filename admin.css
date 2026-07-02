@@ -43,6 +43,11 @@ h2 { font-size:20px; }
 .table-wrap { overflow:auto; }
 table { width:100%; border-collapse:collapse; font-size:12px; }
 th { padding:13px 18px; background:#f8f8f5; color:var(--muted); text-align:left; font-size:10px; white-space:nowrap; }
+#ordersPage th[data-order-column]:not([data-order-column="select"]) { cursor:grab; user-select:none; transition:background .15s,opacity .15s; }
+#ordersPage th[data-order-column]:not([data-order-column="select"])::before { content:"⋮⋮"; margin-right:6px; color:#bbb; letter-spacing:-3px; }
+#ordersPage th[data-order-column].column-dragging { opacity:.22; }
+.column-drag-follower { position:fixed; z-index:1000; display:flex; align-items:center; padding:0 18px; box-sizing:border-box; pointer-events:none; overflow:hidden; white-space:nowrap; background:#fff3ee; color:var(--red); font-size:10px; font-weight:700; box-shadow:0 8px 24px rgba(80,38,30,.14),inset 0 0 0 2px rgba(168,56,46,.28); }
+.column-drag-follower::before { content:"⋮⋮"; margin-right:6px; color:var(--red); letter-spacing:-3px; }
 td { padding:16px 18px; border-top:1px solid var(--line); vertical-align:middle; }
 td strong,td small { display:block; }
 td small { color:var(--muted); margin-top:4px; line-height:1.4; }
@@ -56,8 +61,8 @@ td small { color:var(--muted); margin-top:4px; line-height:1.4; }
 .product-tools input { min-width:180px; }
 .bulk-actions strong { color:var(--muted); font-size:11px; white-space:nowrap; }
 .bulk-actions button { border:0; border-radius:4px; padding:10px 13px; font-size:11px; font-weight:800; }
-.check-cell { width:38px; text-align:center; }
-.check-cell input,.order-select { width:15px; height:15px; margin:0; accent-color:var(--red); }
+.check-cell { width:38px; text-align:center; vertical-align:middle; line-height:0; }
+.check-cell input,.order-select { display:block; width:15px; height:15px; margin:0 auto; accent-color:var(--red); }
 .row-actions { white-space:nowrap; }
 .row-actions button { border:0; background:transparent; color:var(--muted); padding:5px; }
 .row-actions button:hover { color:var(--red); }

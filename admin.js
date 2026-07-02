@@ -53,6 +53,13 @@ localStorage.setItem("sansok-settings", JSON.stringify(settings));
 const won = value => `${Number(value).toLocaleString("ko-KR")}원`;
 const dateText = value => new Date(value).toLocaleString("ko-KR", { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]));
+const defaultOrderColumns = ["select", "order", "customer", "product", "amount", "status", "actions"];
+let orderColumnOrder = JSON.parse(localStorage.getItem("sansok-order-column-order") || "null");
+if (!Array.isArray(orderColumnOrder) || defaultOrderColumns.some(column => !orderColumnOrder.includes(column))) {
+  orderColumnOrder = [...defaultOrderColumns];
+}
+orderColumnOrder = ["select", ...orderColumnOrder.filter(column => column !== "select")];
+localStorage.setItem("sansok-order-column-order", JSON.stringify(orderColumnOrder));
 
 function reportFirebaseError(error) {
   console.error(error);
@@ -84,7 +91,89 @@ function orderRow(order, selectable = true) {
   const itemText = order.items.map(item => `${item.name.startsWith(item.variety) ? item.name : `${item.variety} ${item.name}`} × ${item.quantity}`).join(", ");
   const requestTag = order.returnRequest ? `<span class="return-request-tag">${order.returnRequest.type} · ${order.returnRequest.status}</span>` : "";
   const requestButton = order.returnRequest ? `<button data-manage-return="${order.id}">요청 처리</button>` : "";
-  return `<tr>${selectable?`<td class="check-cell"><input class="order-select" type="checkbox" value="${order.id}" aria-label="${order.id} 선택"></td>`:""}<td><strong>${order.id}</strong><small>${dateText(order.createdAt)}</small>${requestTag}</td><td><strong>${order.customer.name}</strong><small>${order.customer.phone}</small></td><td><strong>${itemText}</strong><small>${order.customer.address}</small></td><td><strong>${won(order.total)}</strong><small>${order.payment ? `${order.payment.method} · ${order.payment.status}` : "결제 정보 없음"}</small></td><td><select class="status-select" data-order-status="${order.id}">${["신규주문","입금확인","배송준비","배송완료","취소"].map(status => `<option ${status===order.status?"selected":""}>${status}</option>`).join("")}</select></td><td class="row-actions">${requestButton}<button data-delete-order="${order.id}">삭제</button></td></tr>`;
+  return `<tr>${selectable?`<td class="check-cell" data-order-column="select"><input class="order-select" type="checkbox" value="${order.id}" aria-label="${order.id} 선택"></td>`:""}<td data-order-column="order"><strong>${order.id}</strong><small>${dateText(order.createdAt)}</small>${requestTag}</td><td data-order-column="customer"><strong>${order.customer.name}</strong><small>${order.customer.phone}</small></td><td data-order-column="product"><strong>${itemText}</strong><small>${order.customer.address}</small></td><td data-order-column="amount"><strong>${won(order.total)}</strong><small>${order.payment ? `${order.payment.method} · ${order.payment.status}` : "결제 정보 없음"}</small></td><td data-order-column="status"><select class="status-select" data-order-status="${order.id}">${["신규주문","입금확인","배송준비","배송완료","취소"].map(status => `<option ${status===order.status?"selected":""}>${status}</option>`).join("")}</select></td><td class="row-actions" data-order-column="actions">${requestButton}<button data-delete-order="${order.id}">삭제</button></td></tr>`;
+}
+function applyOrderColumnOrder() {
+  document.querySelectorAll("#ordersPage table tr").forEach(row => {
+    const cells = [...row.children].filter(cell => cell.dataset.orderColumn);
+    if (!cells.length) return;
+    cells.sort((a, b) => orderColumnOrder.indexOf(a.dataset.orderColumn) - orderColumnOrder.indexOf(b.dataset.orderColumn));
+    cells.forEach(cell => row.append(cell));
+  });
+}
+function moveOrderColumns(nextOrder) {
+  const cells = [...document.querySelectorAll("#ordersPage [data-order-column]")];
+  cells.forEach(cell => cell.getAnimations().forEach(animation => animation.cancel()));
+  const previousPositions = new Map(cells.map(cell => [cell, cell.getBoundingClientRect().left]));
+  orderColumnOrder = nextOrder;
+  applyOrderColumnOrder();
+  cells.forEach(cell => {
+    const offset = previousPositions.get(cell) - cell.getBoundingClientRect().left;
+    if (!offset) return;
+    cell.animate(
+      [{ transform:`translateX(${offset}px)` }, { transform:"translateX(0)" }],
+      { duration:180, easing:"cubic-bezier(.22,.8,.3,1)" }
+    );
+  });
+}
+function setupOrderColumnDrag() {
+  const header = document.querySelector("#ordersPage thead");
+  const dragImage = document.createElement("span");
+  dragImage.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;";
+  document.body.append(dragImage);
+  let draggedColumn = null;
+  let dragFollower = null;
+  let grabOffsetX = 0;
+  let orderChanged = false;
+  header.querySelectorAll('th[data-order-column]:not([data-order-column="select"])').forEach(cell => { cell.draggable = true; });
+  header.addEventListener("dragstart", event => {
+    const cell = event.target.closest('th[data-order-column]:not([data-order-column="select"])');
+    if (!cell) return;
+    draggedColumn = cell.dataset.orderColumn;
+    orderChanged = false;
+    cell.classList.add("column-dragging");
+    const rect = cell.getBoundingClientRect();
+    grabOffsetX = event.clientX - rect.left;
+    dragFollower = document.createElement("div");
+    dragFollower.className = "column-drag-follower";
+    dragFollower.textContent = cell.textContent.trim();
+    dragFollower.style.cssText = `left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+    document.body.append(dragFollower);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", draggedColumn);
+    event.dataTransfer.setDragImage(dragImage, 0, 0);
+  });
+  document.addEventListener("dragover", event => {
+    if (!draggedColumn || !dragFollower) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    dragFollower.style.left = `${event.clientX - grabOffsetX}px`;
+    const cells = [...header.querySelectorAll('th[data-order-column]:not([data-order-column="select"])')]
+      .filter(cell => cell.dataset.orderColumn !== draggedColumn);
+    if (!cells.length) return;
+    const cell = cells.find(item => event.clientX < item.getBoundingClientRect().right) || cells[cells.length - 1];
+    const rect = cell.getBoundingClientRect();
+    const nextOrder = orderColumnOrder.filter(column => column !== draggedColumn);
+    const targetIndex = nextOrder.indexOf(cell.dataset.orderColumn);
+    const placeAfter = event.clientX > rect.left + rect.width / 2;
+    nextOrder.splice(targetIndex + (placeAfter ? 1 : 0), 0, draggedColumn);
+    if (nextOrder.some((column, index) => column !== orderColumnOrder[index])) {
+      moveOrderColumns(nextOrder);
+      localStorage.setItem("sansok-order-column-order", JSON.stringify(orderColumnOrder));
+      orderChanged = true;
+    }
+  });
+  document.addEventListener("drop", event => {
+    if (draggedColumn) event.preventDefault();
+  });
+  header.addEventListener("dragend", () => {
+    if (orderChanged) toast("주문 관리 열 순서를 변경했습니다.");
+    dragFollower?.remove();
+    dragFollower = null;
+    draggedColumn = null;
+    orderChanged = false;
+    header.querySelectorAll(".column-dragging").forEach(item => item.classList.remove("column-dragging"));
+  });
 }
 function renderOrders() {
   const query = document.querySelector("#orderSearch").value.trim().toLowerCase();
@@ -95,6 +184,7 @@ function renderOrders() {
     return (!query || text.includes(query)) && matchesStatus;
   });
   document.querySelector("#orderRows").innerHTML = filtered.length ? filtered.map(order => orderRow(order, true)).join("") : `<tr><td colspan="7" class="table-empty">조건에 맞는 주문이 없습니다.</td></tr>`;
+  applyOrderColumnOrder();
   document.querySelector("#selectAllOrders").checked = false;
   updateSelectedCount();
 }
@@ -334,6 +424,9 @@ document.querySelector("#applyBulkStatus").addEventListener("click", () => {
   toast(`${selected.length}건의 주문 상태를 변경했습니다.`);
 });
 
+setupOrderColumnDrag();
+applyOrderColumnOrder();
+
 let adminInitialized = false;
 async function initializeAdmin() {
   if (adminInitialized) return;
@@ -380,16 +473,26 @@ document.body.classList.add("admin-locked");
 const adminLoginButton = document.querySelector("#adminGoogleLogin");
 const adminLoginError = document.querySelector("#adminLoginError");
 const isFilePreview = location.protocol === "file:";
+const isLocalPreview = ["localhost", "127.0.0.1"].includes(location.hostname);
 
 if (isFilePreview) {
   document.querySelector("#adminLock p").textContent = "Google 로그인은 로컬 서버 또는 배포된 사이트에서 사용할 수 있습니다.";
   adminLoginButton.textContent = "로컬 서버에서 관리자 페이지 열기";
   adminLoginError.textContent = "파일을 직접 연 상태에서는 Google 로그인을 사용할 수 없습니다.";
+} else if (isLocalPreview) {
+  document.querySelector("#adminLock p").textContent = "로컬에서는 인증 없이 판매 관리 화면을 확인할 수 있습니다.";
+  adminLoginButton.textContent = "로컬 미리보기로 들어가기";
+  adminLoginError.textContent = "이 모드의 변경사항은 Firebase 운영 데이터에 저장되지 않습니다.";
 }
 
 adminLoginButton.addEventListener("click", async () => {
   if (isFilePreview) {
     location.href = "http://localhost:4173/outputs/haetsal-apple-shop/admin.html";
+    return;
+  }
+  if (isLocalPreview) {
+    window.sansokFirebase.auth.enableLocalMock();
+    unlockAdmin();
     return;
   }
   adminLoginButton.disabled = true;

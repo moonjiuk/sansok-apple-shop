@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>산속 놀이터 판매 관리</title>
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=20260702-8">
 </head>
 <body>
   <div class="admin-lock" id="adminLock">
@@ -71,7 +71,7 @@
             <button id="applyBulkStatus" class="primary">선택 주문 변경</button>
           </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th class="check-cell"><input id="selectAllOrders" type="checkbox" aria-label="현재 목록 전체 선택"></th><th>주문번호·일시</th><th>주문자</th><th>상품</th><th>금액</th><th>상태</th><th></th></tr></thead><tbody id="orderRows"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th class="check-cell" data-order-column="select"><input id="selectAllOrders" type="checkbox" aria-label="현재 목록 전체 선택"></th><th data-order-column="order">주문번호·일시</th><th data-order-column="customer">주문자</th><th data-order-column="product">상품</th><th data-order-column="amount">금액</th><th data-order-column="status">상태</th><th data-order-column="actions">관리</th></tr></thead><tbody id="orderRows"></tbody></table></div>
       </div>
     </section>
 
@@ -151,7 +151,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="admin.js"></script>
+  <script src="firebase-config.js?v=20260702-6"></script>
+  <script src="admin.js?v=20260702-17"></script>
 </body>
 </html>

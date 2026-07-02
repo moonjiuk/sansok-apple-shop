@@ -90,7 +90,8 @@ h1 em { font-style: normal; color: var(--red); }
 .variety-group[open] .variety-meta i { transform: rotate(225deg); }
 .variety-group .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 0 24px 28px; border-top: 1px solid var(--line); }
 .variety-group:not([open]) .product-grid { display: none; }
-.product-card { min-width: 0; display: flex; flex-direction: column; }
+.product-card { min-width: 0; display: flex; flex-direction: column; transition: background .2s, box-shadow .2s, transform .2s; }
+.product-card:hover { background: rgba(246,241,231,.65); box-shadow: 0 12px 28px rgba(24,56,43,.09); transform: translateY(-2px); }
 .product-image { width: 100%; height: 300px; position: relative; overflow: hidden; border: 0; padding: 0; background: #eee7d8; display: grid; place-items: center; cursor: pointer; }
 .product-image::before { content: ""; width: 190px; height: 200px; border-radius: 48%; background: radial-gradient(circle at 30% 20%, #fc8b72, #d6382c 58%, #a51f1c); box-shadow: inset -16px -12px 25px rgba(72,0,0,.18), 0 30px 45px rgba(53,34,18,.15); transform: rotate(var(--rotate, -5deg)); }
 .product-card:nth-child(4n+2) .product-image { background: #dfe8d5; }
@@ -104,11 +105,11 @@ h1 em { font-style: normal; color: var(--red); }
 .badge.sale { background: var(--red); }
 .product-info { padding: 20px 2px 0; display: flex; flex: 1; flex-direction: column; }
 .mobile-product-tags { display: none; }
-.product-title-row { display: flex; flex: 1; justify-content: space-between; align-items: flex-start; gap: 15px; }
-.product-title-row h3 { margin: 0 0 8px; font-size: 18px; }
-.product-detail-link { border: 0; padding: 0; background: transparent; color: inherit; cursor: pointer; text-align: left; font-weight: 700; }
-.product-detail-link:hover { color: var(--red); }
-.product-title-row p { margin: 0; color: var(--muted); font-size: 13px; }
+.product-title-row { display: flex; flex: 1; justify-content: space-between; align-items: flex-start; gap: 15px; width: 100%; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.product-title-copy { display: block; min-width: 0; }
+.product-name { display: block; margin: 0 0 8px; font-size: 18px; }
+.product-card:hover .product-name { color: var(--red); }
+.product-desc { display: block; color: var(--muted); font-size: 13px; font-weight: 400; }
 .product-price { white-space: nowrap; font-size: 17px; font-weight: 800; }
 .product-price del { display: block; color: #9d9f9b; font-size: 12px; font-weight: 400; }
 .add-button { width: 100%; margin-top: 20px; border: 1px solid var(--ink); background: transparent; padding: 13px; cursor: pointer; font-weight: 700; transition: .2s; }
@@ -428,8 +429,8 @@ dialog::backdrop { background: rgba(12,25,19,.65); }
   .mobile-product-tags i { font-style: normal; }
   .mobile-product-tags i::before { content: "·"; margin-right: 6px; color: var(--line); }
   .product-title-row { display: block; grid-column: 1; min-width: 0; }
-  .product-title-row h3 { margin-bottom: 5px; font-size: 15px; line-height: 1.35; }
-  .product-title-row p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+  .product-name { margin-bottom: 5px; font-size: 15px; line-height: 1.35; }
+  .product-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
   .product-price { margin-top: 8px; font-size: 15px; }
   .add-button { grid-column: 2; grid-row: 1 / span 2; align-self: center; width: 92px; margin: 0; padding: 11px 8px; font-size: 11px; }
   .story { padding: 20px; }
@@ -441,8 +442,17 @@ dialog::backdrop { background: rgba(12,25,19,.65); }
   .info-grid { grid-template-columns: 1fr; }
   .info-grid article { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.25); }
   footer { padding: 45px 20px; }
-  .detail-dialog-content { padding: 45px 18px 24px; }
+  .detail-dialog-content { padding: 45px 18px 112px; }
   #productDetailDialog .dialog-close { top: 28px; right: 23px; }
+  #productDetailDialog .detail-order-button {
+    position: fixed;
+    z-index: 9;
+    left: 33px;
+    right: 33px;
+    bottom: calc(28px + env(safe-area-inset-bottom));
+    width: auto;
+    box-shadow: 0 8px 24px rgba(20,34,27,.24);
+  }
   .detail-visual { min-height: 390px; }
   .detail-visual::before { width: 240px; height: 255px; }
   .detail-guides { grid-template-columns: 1fr; }

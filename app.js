@@ -146,10 +146,10 @@ function renderProducts(filter = activeFilter) {
         </button>
         <div class="product-info">
           <div class="mobile-product-tags" aria-hidden="true"><span>${product.badge}</span><i>${effectiveStatus}</i></div>
-          <div class="product-title-row">
-            <div><h3><button class="product-detail-link" type="button" data-detail="${product.id}">${product.name}</button></h3><p>${product.desc} · ${product.size}</p></div>
-            <div class="product-price">${won(product.price)}</div>
-          </div>
+          <button class="product-title-row" type="button" data-detail="${product.id}" aria-label="${product.name} 상세보기">
+            <span class="product-title-copy"><strong class="product-name">${product.name}</strong><span class="product-desc">${product.desc} · ${product.size}</span></span>
+            <span class="product-price">${won(product.price)}</span>
+          </button>
           <button class="add-button" data-add="${product.id}" ${disabled ? "disabled" : ""}>${disabled ? effectiveStatus : "장바구니 담기"}</button>
         </div>
       </article>`;

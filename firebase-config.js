@@ -11,9 +11,10 @@ firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
 const firebaseAuth = typeof firebase.auth === "function" ? firebase.auth() : null;
 const ADMIN_EMAILS = ["moonjiugi917@gmail.com"];
+let localAdminMock = false;
 
 function isAdminUser(user) {
-  return Boolean(user && ADMIN_EMAILS.includes((user.email || "").toLowerCase()));
+  return localAdminMock || Boolean(user && ADMIN_EMAILS.includes((user.email || "").toLowerCase()));
 }
 
 window.sansokFirebase = {
@@ -22,6 +23,11 @@ window.sansokFirebase = {
       return firebaseAuth.onAuthStateChanged(callback);
     },
     isAdmin: isAdminUser,
+    enableLocalMock() {
+      if (!["localhost", "127.0.0.1"].includes(location.hostname)) return false;
+      localAdminMock = true;
+      return true;
+    },
     async signInAdmin() {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
@@ -50,12 +56,15 @@ window.sansokFirebase = {
     };
   },
   saveProducts(products) {
+    if (localAdminMock) return Promise.resolve();
     return firestore.doc("store/catalog").set({ products, updatedAt: new Date().toISOString() });
   },
   saveSettings(settings) {
+    if (localAdminMock) return Promise.resolve();
     return firestore.doc("store/settings").set({ ...settings, updatedAt: new Date().toISOString() });
   },
   saveOrders(orders) {
+    if (localAdminMock) return Promise.resolve();
     return firestore.doc("store/orders").set({ orders, updatedAt: new Date().toISOString() });
   },
   async loadProductImage(productId) {
@@ -63,6 +72,7 @@ window.sansokFirebase = {
     return image.exists ? image.data().imageData : null;
   },
   saveProductImage(productId, imageData) {
+    if (localAdminMock) return Promise.resolve();
     return firestore.doc(`productImages/${productId}`).set({
       imageData,
       updatedAt: new Date().toISOString()
