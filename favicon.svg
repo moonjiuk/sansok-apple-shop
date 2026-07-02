@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="apple" x1="14" y1="12" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e84c3f"/>
+      <stop offset="1" stop-color="#bd2e26"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#apple)" d="M31.8 18.8c-5.2-4.2-13.6-3.6-18.3 2.1C7.1 28.7 10.1 46 19.2 53c5.4 4.2 9.7.4 12.8.4s7.4 3.8 12.8-.4c9.1-7 12.1-24.3 5.7-32.1-4.7-5.7-13.1-6.3-18.7-2.1Z"/>
+  <path fill="#5a7a42" d="M34.4 15.6C37.2 8.3 43.8 6 51.2 8.4c-2.1 7.1-8.3 10.5-16.8 7.2Z"/>
+</svg>
